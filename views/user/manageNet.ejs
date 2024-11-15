@@ -1,0 +1,209 @@
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<% if (message !== null && messageType !== null) { %>
+  <script>
+    Toastify({
+      text: "<%= message %>",
+      backgroundColor: "<%= messageType === 'success' ? '#4CAF50' : '#FF6347' %>", // Success = Green, Error = Red
+      duration: 3000,  
+      close: true,     
+
+    }).showToast();
+  </script>
+<% } %>
+
+
+
+<div class="buttons">
+  <div>
+    <span>Actualiser</span>
+  </div>
+  <div>
+    <span onclick="confirmDeleteModem()">Supprimer le modem</span>
+    <span onclick="confirmResetModem()">Réinitialiser le modem</span>
+  </div>
+</div>
+
+<section id="Manage">
+  <% if (data && data.length > 0) { %>
+    <h2 class="toggle-section">Mes réseaux</h2>
+    <div class="section-content">
+      <div class="headManage">
+        <span>Nom réseau</span>
+        <span>Cryptage</span>
+        <span>Affichage</span>
+        <span>Fréquence</span>
+        <span>Mot de passe</span>
+      </div>
+      <div>
+        <ul class="manageData">
+          <% let count2_4GHz = 0; %>
+          <% let count5GHz = 0; %>
+
+          <% data.forEach((network) => { %>
+            <% if (network.enableChecked === true) { %>
+              <% if (count2_4GHz < 3) { %>
+                <!-- Réseaux 2.4 GHz -->
+                <li class="data">
+                  <span><%= network.essid %></span>
+                  <span><%= network.encryptionType %></span>
+                  <span><%= network.essidHideEnabled ? 'Privé' : 'Public' %></span>
+                  <span>2.4 GHz</span>
+                  <span><%= network.password %></span>
+                </li>
+                <% count2_4GHz++; %>
+              <% } else if (count5GHz === 0) { %>
+                <!-- Ignorer le premier réseau 5 GHz -->
+                <% count5GHz++; %>
+              <% } else { %>
+                <!-- Autres réseaux 5 GHz -->
+                <li class="data">
+                  <span><%= network.essid %></span>
+                  <span><%= network.encryptionType %></span>
+                  <span><%= network.essidHideEnabled ? 'Privé' : 'Public' %></span>
+                  <span>5 GHz</span>
+                  <span><%= network.password %></span>
+                </li>
+                <% count5GHz++; %>
+              <% } %>
+            <% } %>
+          <% }) %>
+        </ul>
+      </div>
+    </div>
+
+    <h2 class="toggle-section">Créer un réseau</h2>
+    <div class="section-content newnet">
+      <form method="post" action="/app/manage/newWifi">
+        <div class="row">
+          <div class="input-group input-group-icon">
+            <input type="text" placeholder="Nom réseau" name="nomReseau" required />
+            <div class="input-icon">
+              <i class="fas fa-wifi"></i>
+            </div>
+          </div>
+    
+          <div class="input-group">
+            <select id="network-visibility-select" name="networkVisibility">
+              <option value="" disabled selected>Affichage</option>
+              <option value="public">Public</option>
+              <option value="private">Privé</option>
+            </select>
+    
+            <select id="network-frequency-select" name="networkFrequency">
+              <option value="" disabled selected>Fréquence</option>
+              <option value="2.4">2.4GHz</option>
+              <option value="5">5GHz</option>
+            </select>
+    
+            <select id="network-security-select" name="networkSecurity" style="display: none;">
+              <option value="" disabled selected>Sécurité</option>
+              <option value="WPA2-PSK-AES">WPA2-PSK-AES</option>
+              <option value="WPA2/WPA3-SAE">WPA2/WPA3-SAE</option>
+              <option value="WPA3">WPA3</option>
+              <option value="WPA/WPA2-PSK-AES">WPA/WPA2-PSK-AES</option>
+              <option value="None">Aucune</option>
+            </select>
+    
+            <select id="network-payment-select" name="networkPayment">
+              <option value="" disabled selected>Payement</option>
+              <option value="free">Gratuit</option>
+              <option value="paid">Payante</option>
+            </select>
+          </div>
+    
+          <div class="input-group input-group-icon">
+            <label for="scannable">Scannable</label>
+            <input style="display: block; width: 10%;" type="checkbox" name="scannable" id="scannable" />
+          </div>
+    
+          
+          <div class="input-group input-group-icon" id="mac-address-group" style="display: none;">
+            <label for="">Adresse Mac</label>
+            <div style="display: flex;align-items: center;">
+            <input class="mac" type="text" placeholder="XX" name="macAddress1" maxlength="2" size="2" />:
+            <input class="mac" type="text" placeholder="XX" name="macAddress2" maxlength="2" size="2" />:
+            <input class="mac" type="text" placeholder="XX" name="macAddress3" maxlength="2" size="2" />:
+            <input class="mac" type="text" placeholder="XX" name="macAddress4" maxlength="2" size="2" />:
+            <input class="mac" type="text" placeholder="XX" name="macAddress5" maxlength="2" size="2" />:
+            <input class="mac" type="text" placeholder="XX" name="macAddress6" maxlength="2" size="2" />
+          </div>
+          </div>
+          
+    
+          <div class="input-group input-group-icon">
+            <input type="password" placeholder="Mot de passe" name="newpasseword" required />
+            <div class="input-icon">
+              <i class="fa fa-key"></i>
+            </div>
+          </div>
+        </div>
+    
+        <div class="row">
+          <button class="button" type="submit">Créer</button>
+        </div>
+      </form>
+    
+      <script>
+        // Afficher ou masquer la sélection de la sécurité en fonction de la visibilité du réseau
+        document.getElementById('network-visibility-select').addEventListener('change', function () {
+          const securitySelect = document.getElementById('network-security-select');
+          securitySelect.style.display = this.value === 'private' ? 'block' : 'none';
+        });
+    
+        
+        document.getElementById('scannable').addEventListener('change', function () {
+          const macAddressGroup = document.getElementById('mac-address-group');
+          if (this.checked) {
+            macAddressGroup.style.display = 'block'; // Affiche l'input si le checkbox est coché
+          } else {
+            macAddressGroup.style.display = 'none'; // Masque l'input si le checkbox est décoché
+          }
+        });
+      </script>
+    </div>
+    
+
+
+    <h2 class="toggle-section">Modifier mot de passe</h2>
+    <div class="section-content newnet">
+      <form method="post" action="/app/manage">
+        <select name="network">
+          <option value="" disabled selected>Réseau</option>
+          <% 
+            data.forEach((network) => { 
+              if (network.enableChecked) { 
+          %>
+                <option value="<%= network.essid %>"><%= network.essid %></option>
+          <% 
+              }
+            }); 
+          %>
+        </select>
+        <div class="row">
+          <div class="input-group input-group-icon">
+            <input type="password" placeholder="Nouveau mot de passe" name="newpassword" />
+            <div class="input-icon">
+              <i class="fa fa-key"></i>
+            </div>
+          </div>
+        </div>
+        <button class="button" type="submit">Changer</button>
+      </form>
+    </div>
+    
+  <% } else { %>
+    <h1>Aucune donnée</h1>
+  <% } %>
+</section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/sweetalert.js" defer></script>
+
+
+
+
+
+

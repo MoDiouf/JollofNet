@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/css/dash.css" />
+  <script defer src="/js/homeNav.js"></script>
+  <title><%= title %></title>
+</head>
+<body>
+  <span class="bckg"></span>
+  <header>
+    <h1>Dashboard</h1>
+    <nav>
+      <ul>
+        <li>
+          <a href="/app/addNetwork" data-title="Projects">Ajouter un réseau</a>
+        </li>
+        <li>
+          <a href="/app/manage" data-title="Manage">Gérer mes réseaux</a>
+        </li>
+        <li>
+          <a href="/app/statistics" data-title="Statistique">Statistiques</a>
+        </li>
+        <li>
+          <a href="/app/profil" data-title="profil">Profil</a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <div class="title">
+      <h2></h2>
+      <a href="javascript:void(0);">Hello <%= name %> !</a>
+    </div>
+
+    <!-- Affichez le contenu dynamique ici -->
+    <div>
+      <% if (content === 'addNetwork') { %>
+        <%- include('./addNetwork') %>
+      <% } else if (content === 'manageNetworks') { %>
+        <%- include('./manageNet') %>
+      <% } else if (content === 'statistics') { %>
+        <%- include('./statistique') %>
+      <% } else if (content === 'settings') { %>
+        <%- include('./profil') %>
+      <% } %>
+    </div>
+
+  </main>
+  
+  <script>
+    document.querySelectorAll('.toggle-section').forEach((heading) => {
+      heading.addEventListener('click', function () {
+        const content = this.nextElementSibling;
+        if (content) {
+          content.style.display = content.style.display === 'none' ? 'block' : 'none';
+        }
+      });
+    });
+
+    document.querySelectorAll('nav a').forEach((link) => {
+      link.addEventListener('click', function () {
+        document.querySelectorAll('main section').forEach((section) => {
+          section.style.display = 'none';
+        });
+
+        const sectionToShow = document.getElementById(this.getAttribute('data-title'));
+        if (sectionToShow) {
+          sectionToShow.style.display = 'block';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
