@@ -30,7 +30,7 @@ export class AddNetworkService {
     username: string,
     password: string,
     id: number,
-  ): Promise<string> {
+  ): Promise<string |boolean> {
     const browser = await puppeteer.launch({
       headless: true,
       args: [
@@ -71,13 +71,14 @@ export class AddNetworkService {
         await this.modemInfoRepository.save(newModemInfo);
       }
 
-      return 'ok';
+      return true;
     } catch (error) {
       console.error(
         'Erreur lors de la connexion avec Puppeteer:',
         error.message,
+      
       );
-      throw new Error(`Error fetching page: ${error.message}`);
+      return false
     } finally {
       await browser.close();
     }

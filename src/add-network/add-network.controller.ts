@@ -31,6 +31,37 @@ export class AddNetworkController {
     return immediateResponse;
   }
 
+  @Post()
+  async AddModem(@Req() req:Request ,@Body() body:any,@Res() res:Response){
+    const idUser = req.session.user.id
+    const {username, password} = body
+    console.log(username,password);
+    const name = req.session.user.name;
+    const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    const data = this.addNetworkService.AddModem(username,password,idUser)
+  
+    if (data) {
+      return res.render('user/dashboard', {
+        content: 'addNetwork', 
+        title: 'Reseau',
+        name:capitalizedname ,
+        data:null,
+        message: 'success',
+        messageType:'Votre modem a été ajouté avec succes',
+      });
+    }else{
+      return res.render('user/dashboard', {
+        content: 'addNetwork', 
+        title: 'Reseau',
+        name:capitalizedname ,
+        data:null,
+        message: 'error',
+        messageType:"Une erreur s'est produit lors de l'ajout",
+      });
+    }
+  }
+
+
   private async fetchModemData(IdUser: any,req:Request) {
     try {
       const modem = await this.addNetworkService.SearchIfModem(IdUser);
@@ -50,4 +81,6 @@ export class AddNetworkController {
       return null;
     }
   }
+
+  
 }
