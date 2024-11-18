@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Req } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import { ModemInfo } from './entities/modemInfo.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Network } from './interfaces/network.interface';
+import { ReseauInfo } from './entities/reseaux.entity';
 @Injectable()
 export class AddNetworkService {
   constructor(
     @InjectRepository(ModemInfo)
-    private modemInfoRepository: Repository<ModemInfo>, // Injection du repository
+    private modemInfoRepository: Repository<ModemInfo>, 
+    @InjectRepository(ReseauInfo)
+    private ReseauInfoRepository: Repository<ReseauInfo>, 
   ) {}
   private readonly baseURL = 'https://192.168.1.1';
 
@@ -220,5 +223,13 @@ export class AddNetworkService {
 
   private delay(time: number) {
     return new Promise((resolve) => setTimeout(resolve, time));
+  }
+
+  async UpdateNetworks(idUser:number){
+    
+   // const modem = await  this.SearchIfModem(idUser)
+   // const data = await this.processModem(modem)
+    //console.log(data);
+    
   }
 }

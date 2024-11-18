@@ -19,6 +19,7 @@ import { ManageService } from './manage/manage.service';
 import { ProfilService } from './profil/profil.service';
 import { ManageController } from './manage/manage.controller';
 import { SharedModule } from './shared/shared.module';
+import { ReseauInfo } from './add-network/entities/reseaux.entity';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { SharedModule } from './shared/shared.module';
       username: 'mohamed',
       password: 'passer',
       database: 'JollofNet',
-      entities: [User, ModemInfo],
+      entities: [User,ModemInfo,ReseauInfo],
       synchronize: false,
     }),
     SignLogModule,

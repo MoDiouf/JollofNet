@@ -38,8 +38,8 @@ export class AddNetworkController {
     console.log(username,password);
     const name = req.session.user.name;
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-    const data = this.addNetworkService.AddModem(username,password,idUser)
-  
+    const data = await this.addNetworkService.AddModem(username,password,idUser)
+    const UpdateNetwork = this.addNetworkService.UpdateNetworks(idUser)
     if (data) {
       return res.render('user/dashboard', {
         content: 'addNetwork', 
