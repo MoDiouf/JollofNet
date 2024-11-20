@@ -1,15 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import { CreateWifiDto } from './DTO/create-wifi.dto';
+import { ReseauInfo } from 'src/add-network/entities/reseaux.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { AddNetworkService } from 'src/add-network/add-network.service';
+
+
 @Injectable()
 export class ManageService {
   private readonly baseURL = 'https://192.168.1.1';
 
+  constructor(
+
+    @InjectRepository(ReseauInfo)
+    private ReseauInfoRepository: Repository<ReseauInfo>, 
+    private readonly addNetworkService: AddNetworkService
+  ) {}
   async changePassword(
     nameNet: string,
     newPassword: string,
     modemUsername: string,
     modemPassword: string,
+    userId:number
   ): Promise<boolean> {
     const browser = await puppeteer.launch({
       headless: true,
@@ -83,6 +96,7 @@ export class ManageService {
             await this.delay(5000);
 
             console.log('Mot de passe modifié avec succès.');
+            this.UpdatePassword(nameNet , newPassword,userId )
             return true; // Retourner true lorsque le mot de passe est modifié avec succès
           }
         } catch (error) {
@@ -109,7 +123,7 @@ export class ManageService {
     return new Promise((resolve) => setTimeout(resolve, time));
   }
 
-  async CreateNewWifi(InfoNewWifi: CreateWifiDto, Username: string, Password: string) {
+  async CreateNewWifi(InfoNewWifi: CreateWifiDto, Username: string, Password: string,idUser:number) {
     console.log(InfoNewWifi);
 
     const browser = await puppeteer.launch({
@@ -280,9 +294,9 @@ export class ManageService {
               // Appliquer les modifications
               await page.click(`#Btn_apply_WLANSSIDConf\\:${i}`);
               await page.click(`#Btn_apply_WLANSSIDConf\\:${i}`);
+              const selector = '.succHint';
+              await page.waitForSelector(selector);
               console.log("Les modifications ont été appliquées pour le réseau.");
-              break;
-
               break;
             } else {
               await page.waitForSelector(instNameSelector);
@@ -302,9 +316,12 @@ export class ManageService {
               // Appliquer les modifications
               await page.click(`#Btn_apply_WLANSSIDConf\\:${i}`);
               await page.click(`#Btn_apply_WLANSSIDConf\\:${i}`);
+              const selector = '.succHint';
+              await page.waitForSelector(selector);
               console.log("Les modifications ont été appliquées pour le réseau.");
               break;
             }
+            
           }
         } catch (error) {
           console.error(`Erreur lors de la vérification du réseau à l'index ${i}:`, error);
@@ -315,11 +332,51 @@ export class ManageService {
       console.error("Erreur lors de la configuration du WiFi :", error);
     } finally {
       await browser.close();
+      this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword)
     }
 
     return true;
   }
+  
+  async UpdatePassword(nameNet:string , newPassword:string,Id:number ){
+    const modem = await this.addNetworkService.SearchIfModem(Id)
+    const IdModem = modem.id
+    const networkToUpdate = await this.ReseauInfoRepository.findOne({
+      where: { modem_id: IdModem, essid: nameNet },
+    });
 
+    if (!networkToUpdate) {
+      console.log('Aucun réseau trouvé avec cet ESSID pour ce modem');
+      return null;
+    }
 
+    // Mettre à jour le mot de passe pour le réseau trouvé
+    networkToUpdate.password = newPassword; // Mettre à jour le mot de passe
+    await this.ReseauInfoRepository.save(networkToUpdate); // Sauvegarder la mise à jour
+    console.log(`Mot de passe du réseau ${nameNet} mis à jour.`);
+
+    
+  }
+
+  async CreateWifiUpdate(id:number,nomReseau:string,password:string){
+    try {
+
+      const nouveauReseau = this.ReseauInfoRepository.create({
+        modem_id: id,
+        essid: nomReseau,
+        password: password,
+      });
+
+      await this.ReseauInfoRepository.save(nouveauReseau);
+  
+      console.log(`Réseau sauvegardé avec succès :`, nouveauReseau);
+    } catch (error) {
+      // Étape 3 : Gérer les erreurs
+      console.error('Erreur lors de la sauvegarde du réseau :', error);
+      throw new Error('Impossible de sauvegarder le réseau');
+    }
+  }
+
+  
 
 }

@@ -99,8 +99,6 @@ export class AddNetworkService {
     }
   }
   async processModem(modem: any): Promise<Network[]> {
-    console.log('Traitement du modem:');
-    console.log('----------------------------------------');
 
     const browser = await puppeteer.launch({
       headless: true,
@@ -159,11 +157,13 @@ export class AddNetworkService {
         };
 
         try {
+          await this.delay(1000); 
+          page.waitForSelector(essidSelector)
           const essidValue = await page.$eval(
             essidSelector,
-            (el: HTMLInputElement) => el.value,
+            (el: HTMLSelectElement) => el.value,
           );
-          network.essid = essidValue;
+          network.essid = essidValue ;
         } catch {}
 
         try {
@@ -213,7 +213,7 @@ export class AddNetworkService {
         values.push(network); // Ajout de l'objet réseau au tableau
       }
 
-      return values; // Retourne le tableau d'objets
+      return values; 
     } catch (error) {
       console.error('Erreur lors du traitement du modem:', error);
     } finally {
@@ -225,11 +225,28 @@ export class AddNetworkService {
     return new Promise((resolve) => setTimeout(resolve, time));
   }
 
-  async UpdateNetworks(idUser:number){
+  async saveNetworks(modemId: number, networks: any[]): Promise<void> {
     
-   // const modem = await  this.SearchIfModem(idUser)
-   // const data = await this.processModem(modem)
-    //console.log(data);
-    
+    const activeNetworks = networks.filter((network) => network.enableChecked);
+
+  if (activeNetworks.length === 0) {
+    console.log('Aucun réseau activé à sauvegarder.');
+    return;
   }
+
+  const reseauxToSave = activeNetworks.map((network) => ({
+    modem_id: modemId,
+    essid: network.essid,
+    encryptionType: network.encryptionType,
+    password: network.password,
+  }));
+
+  await this.ReseauInfoRepository.save(reseauxToSave);
+  }
+  
+  async checkNetworksExist(modemId: number): Promise<boolean> {
+    const count = await this.ReseauInfoRepository.count({ where: { modem_id: modemId } });
+    return count > 0;
+  }
+  
 }

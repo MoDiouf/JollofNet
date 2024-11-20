@@ -55,8 +55,8 @@ export class ManageController {
   
     const modemUser = req.session.user.modemUsername;
     const modemPass = req.session.user.modemPassword;
-  
-    const change = await this.manageService.changePassword(network, newPassword, modemUser, modemPass);
+    const userID  = req.session.user.id
+    const change = await this.manageService.changePassword(network, newPassword, modemUser, modemPass,userID);
   
     console.log("Résultat de l'opération de changement de mot de passe:", change);
   
@@ -86,6 +86,7 @@ export class ManageController {
   async createNewWifi(@Body() createWifiDto: CreateWifiDto,@Req() req:Request,@Res() res:Response) {
     const data = this.sharedService.getModemData();
     const name = req.session.user.name;
+    const userId = req.session.user.id
     const modemUsername = req.session.user.modemUsername
     const modemPassword = req.session.user.modemPassword
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
@@ -99,7 +100,7 @@ export class ManageController {
   
   if (disabledNetwork) {
     console.log('Réseau désactivé trouvé:', disabledNetwork);
-    const AddNewNet = await this.manageService.CreateNewWifi(createWifiDto,modemUsername,modemPassword);
+    const AddNewNet = await this.manageService.CreateNewWifi(createWifiDto,modemUsername,modemPassword,userId);
     if (AddNewNet) {
       return res.status(200).render('user/dashboard', {
         content: 'manageNetworks', 

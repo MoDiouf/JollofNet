@@ -39,7 +39,7 @@ export class AddNetworkController {
     const name = req.session.user.name;
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     const data = await this.addNetworkService.AddModem(username,password,idUser)
-    const UpdateNetwork = this.addNetworkService.UpdateNetworks(idUser)
+    //const UpdateNetwork = this.addNetworkService.UpdateNetworks(idUser)
     if (data) {
       return res.render('user/dashboard', {
         content: 'addNetwork', 
@@ -74,7 +74,15 @@ export class AddNetworkController {
       req.session.user.modemPassword = modem.modem_mot_de_passe
       console.log(data);
       
+      
       this.sharedService.setModemData(data);
+    const existingNetworks = await this.addNetworkService.checkNetworksExist(modem.id);
+    if (!existingNetworks) {
+      console.log('Nouveaux enregistrements....');
+      this.saveNetworksInBackground(modem.id, data);
+    } else {
+      console.log('Réseaux déjà sauvegardés, aucune action nécessaire.');
+    }
       return data;
     } catch (error) {
       console.error('Erreur lors du traitement du modem:', error);
@@ -82,5 +90,14 @@ export class AddNetworkController {
     }
   }
 
-  
+  private async saveNetworksInBackground(modemId: number, networks: any[]) {
+    setImmediate(async () => {
+      try {
+        await this.addNetworkService.saveNetworks(modemId, networks);
+        console.log('Réseaux sauvegardés en tâche de fond.');
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde des réseaux:', error);
+      }
+    });
+  }
 }
