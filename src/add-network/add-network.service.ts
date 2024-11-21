@@ -145,7 +145,7 @@ export class AddNetworkService {
         const essidHideSelector = `#ESSIDHideEnable0\\:${i}`;
         const enableSelector = `#Enable1\\:${i}`;
         const keyPassphraseSelector = `#KeyPassphrase\\:${i}`;
-
+        const frequency = `a#instName_WLANSSIDConf\\:${i}`
         const network: Network = {
           essid: null,
           encryptionType: null,
@@ -153,9 +153,21 @@ export class AddNetworkService {
           essidHideValue: null,
           enableChecked: false,
           enableValue: null,
+          frequency:null,
           password: null,
         };
 
+        try {
+          const frequencyMatch = await page.$eval(
+            'a#instName_WLANSSIDConf\\:0', 
+            (element) => {
+              const title = element.getAttribute('title'); 
+              const match = title.match(/\((.*?)\)/); 
+              return match ? match[1] : null; 
+            }
+          );
+          network.frequency = frequencyMatch
+        } catch {}
         try {
           await this.delay(1000); 
           page.waitForSelector(essidSelector)
@@ -215,12 +227,30 @@ export class AddNetworkService {
 
       return values; 
     } catch (error) {
-      console.error('Erreur lors du traitement du modem:', error);
+      //console.error('Erreur lors du traitement du modem:', error);
     } finally {
       await browser.close(); // Assurez-vous de fermer le navigateur
     }
   }
 
+  async processModemWithTimeout(modem: any): Promise<Network[] | 'long'> {
+    const TIMEOUT = 19000; // Temps limite en millisecondes
+  
+    // Promesse de timeout
+    const timeoutPromise = new Promise<'long'>((resolve) => {
+      setTimeout(() => {
+        resolve('long'); // Retourne 'long' après 19 secondes
+      }, TIMEOUT);
+    });
+  
+    // Promesse pour la méthode `processModem`
+    const processPromise = this.processModem(modem);
+  
+    // Retourne la première promesse qui se résout
+    const result = await Promise.race([processPromise, timeoutPromise]);
+    return result;
+  }
+  
   private delay(time: number) {
     return new Promise((resolve) => setTimeout(resolve, time));
   }

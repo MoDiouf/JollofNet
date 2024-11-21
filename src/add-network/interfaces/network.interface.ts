@@ -6,6 +6,7 @@ export interface Network {
     essidHideEnabled: boolean;
     essidHideValue: string | null;
     enableChecked: boolean;
+    frequency : string;
     enableValue: string | null;
     password: string | null;
     

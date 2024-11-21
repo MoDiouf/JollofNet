@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
+import {Network} from './../add-network/interfaces/network.interface'
 @Injectable()
 export class SharedService {
   private modemData: any;

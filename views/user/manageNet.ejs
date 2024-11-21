@@ -38,38 +38,19 @@
       </div>
       <div>
         <ul class="manageData">
-          <% let count2_4GHz = 0; %>
-          <% let count5GHz = 0; %>
-
           <% data.forEach((network) => { %>
             <% if (network.enableChecked === true) { %>
-              <% if (count2_4GHz < 3) { %>
-                <!-- Réseaux 2.4 GHz -->
-                <li class="data">
-                  <span><%= network.essid %></span>
-                  <span><%= network.encryptionType %></span>
-                  <span><%= network.essidHideEnabled ? 'Privé' : 'Public' %></span>
-                  <span>2.4 GHz</span>
-                  <span><%= network.password %></span>
-                </li>
-                <% count2_4GHz++; %>
-              <% } else if (count5GHz === 0) { %>
-                <!-- Ignorer le premier réseau 5 GHz -->
-                <% count5GHz++; %>
-              <% } else { %>
-                <!-- Autres réseaux 5 GHz -->
-                <li class="data">
-                  <span><%= network.essid %></span>
-                  <span><%= network.encryptionType %></span>
-                  <span><%= network.essidHideEnabled ? 'Privé' : 'Public' %></span>
-                  <span>5 GHz</span>
-                  <span><%= network.password %></span>
-                </li>
-                <% count5GHz++; %>
-              <% } %>
+              <li class="data">
+                <span><%= network.essid %></span>
+                <span><%= network.encryptionType %></span>
+                <span><%= network.essidHideEnabled ? 'Privé' : 'Public' %></span>
+                <span><%= network.frequency %></span>
+                <span><%= network.password %></span>
+              </li>
             <% } %>
           <% }) %>
         </ul>
+        
       </div>
     </div>
 
@@ -165,6 +146,25 @@
     </div>
     
 
+    <h2 class="toggle-section">Supprimer un reseau</h2>
+    <div class="section-content newnet">
+      <form method="post" class="columnStyle" action="/app/manage/deleteWifi">
+        <select name="networkDelete">
+          <option value="" disabled selected>Réseau</option>
+          <% 
+            data.forEach((network) => { 
+              if (network.enableChecked) { 
+          %>
+                <option value="<%= network.essid %>"><%= network.essid %></option>
+          <% 
+              }
+            }); 
+          %>
+
+        </select>
+        <button class="button" style="width: 35%;"  type="submit">Supprimer le reseau</button>
+      </form>
+    </div>
 
     <h2 class="toggle-section">Modifier mot de passe</h2>
     <div class="section-content newnet">
@@ -189,7 +189,10 @@
             </div>
           </div>
         </div>
-        <button class="button" type="submit">Changer</button>
+        <div>
+          <button class="button" type="submit">Changer</button>
+        </div>
+        
       </form>
     </div>
     

@@ -20,6 +20,17 @@ export class AddNetworkController {
       modemData = await this.fetchModemData(req.session.user.id, req);
     }
     
+    if (modemData == null) {
+      const immediateResponse = { 
+        title: 'Ajouter un réseau', 
+        content: 'addNetwork', 
+        name: capitalizedname,
+        modemData,
+        message: 'Connexion lente actualiser ulterieurement',
+        messageType: 'error', 
+      };
+      return immediateResponse
+    }
     const immediateResponse = { 
       title: 'Ajouter un réseau', 
       content: 'addNetwork', 
@@ -69,11 +80,13 @@ export class AddNetworkController {
         console.log('Aucun modem trouvé pour cet utilisateur.');
         return false; 
       }
-      const data = await this.addNetworkService.processModem(modem);
+      const data = await this.addNetworkService.processModemWithTimeout(modem);
       req.session.user.modemUsername = modem.modem_username
       req.session.user.modemPassword = modem.modem_mot_de_passe
       console.log(data);
-      
+      if (data =='long') {
+        return null
+      }
       
       this.sharedService.setModemData(data);
     const existingNetworks = await this.addNetworkService.checkNetworksExist(modem.id);
@@ -90,7 +103,7 @@ export class AddNetworkController {
     }
   }
 
-  private async saveNetworksInBackground(modemId: number, networks: any[]) {
+  private async saveNetworksInBackground(modemId: number, networks: any) {
     setImmediate(async () => {
       try {
         await this.addNetworkService.saveNetworks(modemId, networks);

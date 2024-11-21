@@ -135,5 +135,12 @@ export class ManageController {
     
   }
 
+  @Post('deleteWifi')
+  async deleteWifi(@Body('networkDelete') networkDelete: string, @Req() req: Request, @Res() res: Response){
+    
+    console.log(networkDelete);
+    
+  }
+
 
 }  
