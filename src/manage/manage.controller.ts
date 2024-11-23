@@ -22,8 +22,8 @@ export class ManageController {
     if (!data) {
       console.log('Pas de données disponibles');
       return { 
-        message: null, 
-        messageType: null, // Ajouter un type de message
+        message: 'success', 
+        messageType: 'Actualiser la page', // Ajouter un type de message
         title: 'Réseau', 
         content: 'manageNetworks', 
         data: null,
@@ -90,14 +90,15 @@ export class ManageController {
     const modemUsername = req.session.user.modemUsername
     const modemPassword = req.session.user.modemPassword
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-    const data2_4GHz = data.slice(0, 3);  // Les trois premiers éléments pour 2.4 GHz
-    const data5GHz = data.slice(3,6);
+    console.log(data);
+
+    const data2_4GHz = data.filter(network => network.frequency === '2.4GHz');
+const data5GHz = data.filter(network => network.frequency === '5GHz');
   const selectedData = createWifiDto.networkFrequency === '2.4' ? data2_4GHz : data5GHz;
     console.log(data2_4GHz);
     
   const  disabledNetwork =  selectedData.find(network => network.enableChecked === false);
 
-  
   if (disabledNetwork) {
     console.log('Réseau désactivé trouvé:', disabledNetwork);
     const AddNewNet = await this.manageService.CreateNewWifi(createWifiDto,modemUsername,modemPassword,userId);
@@ -138,9 +139,34 @@ export class ManageController {
   @Post('deleteWifi')
   async deleteWifi(@Body('networkDelete') networkDelete: string, @Req() req: Request, @Res() res: Response){
     
+    const username = req.session.user.modemUsername
+    const password = req.session.user.modemPassword
     console.log(networkDelete);
-    
+    const userID  = req.session.user.id
+    const name = req.session.user.name;
+    const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    const data  = await this.manageService.deleteWifi(networkDelete,username,password,userID)
+    //console.log(data);
+    const dataModem = this.sharedService.getModemData();
+    if (data) {
+      return res.status(200).render('user/dashboard', {
+      content: 'manageNetworks', 
+      title: 'Reseau',
+      name:capitalizedname ,
+      data:dataModem,
+      message: 'Réseau supprimé avec succes',
+      messageType: 'success',
+    })  
   }
-
-
+  else{
+    return res.status(200).render('user/dashboard', {
+      content: 'manageNetworks', 
+      title: 'Reseau',
+      name:capitalizedname ,
+      data:dataModem,
+      message: "Une erreur s'est produite reessayer" ,
+      messageType: 'error',
+    })  
+  }
+  }
 }  

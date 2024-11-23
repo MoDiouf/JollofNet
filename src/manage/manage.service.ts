@@ -59,53 +59,64 @@ export class ManageService {
       console.log('Tous les réseaux...');
       await page.click('#WLANSSIDConfBar');
 
-      for (let i = 0; i <= 5; i++) {
-        const essidSelector = `#ESSID\\:${i}`;
-        const enable1Selector = `#Enable1\\:${i}`;
-        const keyPassphraseSelector = `#KeyPassphrase\\:${i}`;
-        const applyButtonSelector = `#Btn_apply_WLANSSIDConf\\:${i}`;
-        const instNameSelector = `#instName_WLANSSIDConf\\:${i}`;
+      let i = 0;
+while (i <= 5) {
+  const essidSelector = `#ESSID\\:${i}`;
+  const enable1Selector = `#Enable1\\:${i}`;
+  const keyPassphraseSelector = `#KeyPassphrase\\:${i}`;
+  const applyButtonSelector = `#Btn_apply_WLANSSIDConf\\:${i}`;
+  const instNameSelector = `#instName_WLANSSIDConf\\:${i}`;
 
-        try {
-          await page.waitForSelector(essidSelector, { timeout: 5000 });
-          const essidValue = await page.$eval(
-            essidSelector,
-            (el: HTMLInputElement) => el.value,
-          );
+  try {
+    // Vérifie si le sélecteur ESSID existe pour cet index
+    await page.waitForSelector(essidSelector, { timeout: 2000 });
+  } catch (error) {
+    console.warn(`Sélecteur introuvable : ${essidSelector}. Arrêt de la boucle.`);
+    break; // Quitte la boucle si le sélecteur n'existe pas
+  }
 
-          // Vérifier si le réseau est activé
-          const isEnabled = await page.$eval(
-            enable1Selector,
-            (el: HTMLInputElement) => el.checked,
-          );
-          if (essidValue === nameNet && isEnabled) {
+  try {
+    // Récupérer la valeur ESSID
+    const essidValue = await page.$eval(
+      essidSelector,
+      (el: HTMLInputElement) => el.value,
+    );
 
-            await page.waitForSelector(instNameSelector);
-            await page.click(instNameSelector);
-            await this.delay(2000);
+    // Vérifier si le réseau est activé
+    const isEnabled = await page.$eval(
+      enable1Selector,
+      (el: HTMLInputElement) => el.checked,
+    );
+    if (essidValue === nameNet && isEnabled) {
+      await page.waitForSelector(instNameSelector);
+      await page.click(instNameSelector);
+      await this.delay(2000);
 
-            // Modifier le mot de passe
-            await page.$eval(keyPassphraseSelector, (el: HTMLInputElement) => el.value = '');
-            await page.type(keyPassphraseSelector, newPassword);
-            await page.click(applyButtonSelector);
+      // Modifier le mot de passe
+      await page.$eval(keyPassphraseSelector, (el: HTMLInputElement) => el.value = '');
+      await page.type(keyPassphraseSelector, newPassword);
+      await page.click(applyButtonSelector);
 
-            // Cliquer à nouveau sur le bouton Appliquer pour garantir que les changements soient appliqués
-            await page.click(applyButtonSelector);
+      // Cliquer à nouveau sur le bouton Appliquer pour garantir que les changements soient appliqués
+      await page.click(applyButtonSelector);
 
-            // Attendre quelques secondes pour s'assurer que les changements ont été effectués
-            await this.delay(5000);
+      // Attendre quelques secondes pour s'assurer que les changements ont été effectués
+      await this.delay(5000);
 
-            console.log('Mot de passe modifié avec succès.');
-            this.UpdatePassword(nameNet , newPassword,userId )
-            return true; // Retourner true lorsque le mot de passe est modifié avec succès
-          }
-        } catch (error) {
-          console.log(
-            `Erreur lors de la vérification ou de la modification pour l'index ${i} :`,
-            error,
-          );
-        }
-      }
+      console.log('Mot de passe modifié avec succès.');
+      this.UpdatePassword(nameNet, newPassword, userId);
+      return true; // Retourner true lorsque le mot de passe est modifié avec succès
+    }
+  } catch (error) {
+    console.log(
+      `Erreur lors de la vérification ou de la modification pour l'index ${i} :`,
+      error,
+    );
+  }
+
+  i++; // Incrémenter l'index pour passer à l'itération suivante
+}
+
 
       // Si aucun réseau n'a été trouvé ou modifié
       console.log('Aucun réseau correspondant trouvé ou modifié.');
@@ -124,7 +135,7 @@ export class ManageService {
   }
 
   async CreateNewWifi(InfoNewWifi: CreateWifiDto, Username: string, Password: string,idUser:number) {
-    console.log(InfoNewWifi);
+    //console.log(InfoNewWifi);
 
     const browser = await puppeteer.launch({
       headless: false,
@@ -367,7 +378,7 @@ export class ManageService {
         password: password,
       });
 
-      await this.ReseauInfoRepository.save(nouveauReseau);
+    await this.ReseauInfoRepository.save(nouveauReseau);
   
       console.log(`Réseau sauvegardé avec succès :`, nouveauReseau);
     } catch (error) {
@@ -377,6 +388,118 @@ export class ManageService {
     }
   }
 
+  async deleteWifi(networkDelete: string, username: string, password: string,userID:number) {
+    const browser = await puppeteer.launch({
+      headless: false,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--ignore-certificate-errors',
+      ],
+    });
+  
+    try {
+      const page = await browser.newPage();
+      await page.setExtraHTTPHeaders({
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+      });
+      await page.goto(this.baseURL, { waitUntil: 'networkidle2' });
+  
+      // Connexion
+      await page.type('#Frm_Username', username);
+      await page.type('#Frm_Password', password);
+      await page.click('#LoginId');
+      await page.waitForNavigation({ waitUntil: 'networkidle2' });
+  
+      // Navigation vers les paramètres WLAN
+      await page.waitForSelector('#localnet');
+      console.log('Accès au réseau local...');
+      await page.click('#localnet');
+  
+      await page.waitForSelector('#wlanConfig');
+      console.log('Accès aux paramètres WLAN...');
+      await page.click('#wlanConfig');
+  
+      await page.waitForSelector('#WLANSSIDConfBar');
+      console.log('Tous les réseaux...');
+      await page.click('#WLANSSIDConfBar');
+  
+      // Recherche et comparaison des ESSID
+      let i = 0;
+      while (true) {
+        const essidSelector = `#ESSID\\:${i}`;
+        const radioButtonSelector = `#Enable0\\:${i}`;
+        const applyButtonSelector = `#Btn_apply_WLANSSIDConf\\:${i}`;
+  
+        try {
+          // Vérifie si le sélecteur ESSID existe
+          await page.waitForSelector(essidSelector, { timeout: 2000 });
+  
+          // Récupère la valeur ESSID
+          const essidValue = await page.$eval(
+            essidSelector,
+            (el: HTMLInputElement) => el.value,
+          );
+  
+          console.log(`ESSID trouvé à l'index ${i} : ${essidValue}`);
+  
+          // Compare la valeur ESSID avec `networkDelete`
+          if (essidValue === networkDelete) {
+            console.log(`Réseau correspondant trouvé : ${essidValue}`);
+            await page.waitForSelector(radioButtonSelector, { timeout: 2000 });
+            await page.click(radioButtonSelector);
+            console.log(`Bouton radio cliqué pour l'index ${i}.`);
+
+            await page.waitForSelector(applyButtonSelector, { timeout: 2000 });
+            await page.click(applyButtonSelector);
+            await page.click(applyButtonSelector);
+            break; // Quitte la boucle une fois le réseau supprimé
+          }
+        } catch (error) {
+          console.warn(`Sélecteur introuvable pour ESSID:${i}. Arrêt de la boucle.`);
+          break; // Quitte la boucle si le sélecteur n'existe pas
+        }
+  
+        i++; // Incrémentation de l'index pour la prochaine itération
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression du réseau :", error);
+      return false
+    } finally {
+      console.log("Fermeture du navigateur...");
+      await browser.close();
+      this.updateDeleteWifi(networkDelete,userID)
+      return true
+    }
+  }
+  
+  async updateDeleteWifi(NetToDelete: string, userID: number){
+    try {
+      // Recherche du réseau avec modem_id et essid correspondant
+      const modemInfo = await this.ReseauInfoRepository.findOne({
+        where: { modem_id: userID, essid: NetToDelete },
+      });
+  
+      if (!modemInfo) {
+        console.warn(
+          `Aucun réseau trouvé pour modem_id: ${userID} et essid: ${NetToDelete}.`,
+        );
+        return false; // Aucun réseau correspondant trouvé
+      }
+  
+      // Suppression du réseau correspondant
+      await this.ReseauInfoRepository.delete(modemInfo.id);
+  
+      console.log(
+        `Le réseau avec essid: ${NetToDelete} pour le modem_id: ${userID} a été supprimé avec succès.`,
+      );
+      
+    } catch (error) {
+      console.error("Erreur lors de la suppression du réseau :", error);
+    }
+  }
+  
   
 
 }

@@ -83,7 +83,6 @@ export class AddNetworkController {
       const data = await this.addNetworkService.processModemWithTimeout(modem);
       req.session.user.modemUsername = modem.modem_username
       req.session.user.modemPassword = modem.modem_mot_de_passe
-      console.log(data);
       if (data =='long') {
         return null
       }

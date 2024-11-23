@@ -139,13 +139,14 @@ export class AddNetworkService {
       await page.click('#WLANSSIDConfBar');
       console.log('Tous les réseaux...');
 
-      for (let i = 0; i <= 5; i++) {
+      let i = 0; // Initialisation du compteur
+      while (i <= 7) {
         const essidSelector = `#ESSID\\:${i}`;
         const encryptionTypeSelector = `#EncryptionType\\:${i}`;
         const essidHideSelector = `#ESSIDHideEnable0\\:${i}`;
         const enableSelector = `#Enable1\\:${i}`;
         const keyPassphraseSelector = `#KeyPassphrase\\:${i}`;
-        const frequency = `a#instName_WLANSSIDConf\\:${i}`
+        const frequencySelector = `#instName_WLANSSIDConf\\:${i}`;
         const network: Network = {
           essid: null,
           encryptionType: null,
@@ -153,88 +154,99 @@ export class AddNetworkService {
           essidHideValue: null,
           enableChecked: false,
           enableValue: null,
-          frequency:null,
+          frequency: null,
           password: null,
         };
-
+      
+        // Vérifier si le sélecteur existe pour ce réseau
+        try {
+          await page.waitForSelector(frequencySelector, { timeout: 1000 });
+        } catch (error) {
+          console.warn(`Sélecteur introuvable : ${frequencySelector}. Arrêt de la boucle.`);
+          break; // Quitte la boucle si le sélecteur n'existe pas
+        }
+      
         try {
           const frequencyMatch = await page.$eval(
-            'a#instName_WLANSSIDConf\\:0', 
+            frequencySelector,
             (element) => {
-              const title = element.getAttribute('title'); 
-              const match = title.match(/\((.*?)\)/); 
-              return match ? match[1] : null; 
+              const title = element.getAttribute('title');
+              const match = title.match(/\((.*?)\)/);
+              return match ? match[1] : null;
             }
           );
-          network.frequency = frequencyMatch
+          network.frequency = frequencyMatch;
         } catch {}
+      
         try {
-          await this.delay(1000); 
-          page.waitForSelector(essidSelector)
+          await this.delay(1000);
+          await page.waitForSelector(essidSelector);
           const essidValue = await page.$eval(
             essidSelector,
-            (el: HTMLSelectElement) => el.value,
+            (el: HTMLSelectElement) => el.value
           );
-          network.essid = essidValue ;
+          network.essid = essidValue;
         } catch {}
-
+      
         try {
           const encryptionTypeValue = await page.$eval(
             encryptionTypeSelector,
-            (el: HTMLSelectElement) => el.value,
+            (el: HTMLSelectElement) => el.value
           );
           network.encryptionType = encryptionTypeValue;
         } catch {}
-
+      
         try {
           const isESSIDHideEnabled = await page.$eval(
             essidHideSelector,
-            (el: HTMLInputElement) => el.checked,
+            (el: HTMLInputElement) => el.checked
           );
           network.essidHideEnabled = isESSIDHideEnabled;
           network.essidHideValue = isESSIDHideEnabled
             ? await page.$eval(
                 essidHideSelector,
-                (el: HTMLInputElement) => el.value,
+                (el: HTMLInputElement) => el.value
               )
             : null;
         } catch {}
-
+      
         try {
           const isChecked = await page.$eval(
             enableSelector,
-            (el: HTMLInputElement) => el.checked,
+            (el: HTMLInputElement) => el.checked
           );
           network.enableChecked = isChecked;
           network.enableValue = isChecked
             ? await page.$eval(
                 enableSelector,
-                (el: HTMLInputElement) => el.value,
+                (el: HTMLInputElement) => el.value
               )
             : null;
         } catch {}
-
+      
         try {
           const passwordValue = await page.$eval(
             keyPassphraseSelector,
-            (el: HTMLInputElement) => el.value,
+            (el: HTMLInputElement) => el.value
           );
           network.password = passwordValue;
         } catch {}
-
+      
         values.push(network); // Ajout de l'objet réseau au tableau
+      
+        i++; // Incrémentation du compteur
       }
-
+      
       return values; 
     } catch (error) {
-      //console.error('Erreur lors du traitement du modem:', error);
+      //console.error('Erreur lors du traitement du modem:', error)
     } finally {
-      await browser.close(); // Assurez-vous de fermer le navigateur
+      await browser.close(); 
     }
   }
 
   async processModemWithTimeout(modem: any): Promise<Network[] | 'long'> {
-    const TIMEOUT = 19000; // Temps limite en millisecondes
+    const TIMEOUT = 50000; // Temps limite en millisecondes
   
     // Promesse de timeout
     const timeoutPromise = new Promise<'long'>((resolve) => {
