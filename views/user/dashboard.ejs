@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="/css/dash.css" />
+  <link rel="stylesheet" href="/css/global.css" />
   <script defer src="/js/homeNav.js"></script>
   <title><%= title %></title>
 </head>
 <body>
+  <div class="loader-container" id="loader-container">
+    <div class="loader"></div>
+  </div>
   <span class="bckg"></span>
   <header>
     <h1>Dashboard</h1>
@@ -47,8 +51,21 @@
     </div>
 
   </main>
+ 
+  <script>
+    // Masquer le loader après le chargement de la page
+    window.addEventListener('load', function() {
+      const loaderContainer = document.getElementById('loader-container');
+      loaderContainer.classList.add('hidden');
+    });
+  </script>
   
   <script>
+     window.addEventListener('load', function() {
+      const loaderContainer = document.getElementById('loader-container');
+      loaderContainer.classList.add('hidden');
+    });
+    
     document.querySelectorAll('.toggle-section').forEach((heading) => {
       heading.addEventListener('click', function () {
         const content = this.nextElementSibling;

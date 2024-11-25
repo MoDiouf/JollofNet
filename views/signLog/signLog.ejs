@@ -14,7 +14,7 @@
       <input type="text" placeholder="Name" name="name"/>
       <input type="email" placeholder="Email" name="email"/>
       <input type="password" placeholder="Password" name="password"/>
-      <button>Sign Up</button>
+      <button type="submit">Sign Up</button>
     </form>
   </div>
   <div class="form-container sign-in-container">
@@ -28,7 +28,7 @@
       <input type="email" placeholder="Email" name="email" />
       <input type="password" placeholder="Password" name="password" />
       <a href="" class="black forgot">Forgot your password?</a>
-      <button>Sign In</button>
+      <button type="submit">Sign In</button>
     </form>
   </div>
   <div class="overlay-container">
@@ -50,6 +50,25 @@
     </div>
   </div>
 </div>
+
+<script>
+
+  const loaderContainer = document.getElementById('loader-container');
+  function showLoader() {
+    loaderContainer.classList.remove('hidden');
+  }
+  const forms = document.querySelectorAll('form');
+
+  forms.forEach((form) => {
+    form.addEventListener('submit', function () {
+      showLoader();
+    });
+  });
+
+  window.addEventListener('load', function () {
+    loaderContainer.classList.add('hidden');
+  });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <% if (locals.errorMessage) { %>

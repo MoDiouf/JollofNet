@@ -90,17 +90,17 @@ export class ManageController {
     const modemUsername = req.session.user.modemUsername
     const modemPassword = req.session.user.modemPassword
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-    console.log(data);
+
 
     const data2_4GHz = data.filter(network => network.frequency === '2.4GHz');
-const data5GHz = data.filter(network => network.frequency === '5GHz');
-  const selectedData = createWifiDto.networkFrequency === '2.4' ? data2_4GHz : data5GHz;
-    console.log(data2_4GHz);
+    const data5GHz = data.filter(network => network.frequency === '5GHz');
+    const selectedData = createWifiDto.networkFrequency === '2.4' ? data2_4GHz : data5GHz;
+
     
   const  disabledNetwork =  selectedData.find(network => network.enableChecked === false);
 
   if (disabledNetwork) {
-    console.log('Réseau désactivé trouvé:', disabledNetwork);
+    //console.log('Réseau désactivé trouvé:', disabledNetwork);
     const AddNewNet = await this.manageService.CreateNewWifi(createWifiDto,modemUsername,modemPassword,userId);
     if (AddNewNet) {
       return res.status(200).render('user/dashboard', {

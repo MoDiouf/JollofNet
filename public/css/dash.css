@@ -330,7 +330,7 @@ input[type='radio'] + label,
 input[type='checkbox'] + label:before,
 select option,
 select {
-  width: 100%;
+  width: 87%;
   padding: 1em;
   line-height: 1.4;
   background-color: #f9f9f9;

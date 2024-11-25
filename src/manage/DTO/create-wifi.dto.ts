@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsString, IsIn, IsOptional, IsBoolean, IsNotEmpty } from 'class-validator';
+import { IsString, IsIn, IsOptional, IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateWifiDto {
   @IsString()
@@ -19,6 +19,11 @@ export class CreateWifiDto {
   @IsIn(['free', 'paid'])
   networkPayment: string;
 
+  @Transform(({ value }) => parseFloat(value), { toClassOnly: true })
+  @IsNumber()
+  @IsOptional() // Si le prix peut être optionnel, ajoutez cette ligne
+  prix: number;
+  
   
   @Transform(({ value }) => value === 'on', { toClassOnly: true })
   @IsBoolean()

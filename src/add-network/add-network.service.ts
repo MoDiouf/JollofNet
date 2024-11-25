@@ -101,7 +101,7 @@ export class AddNetworkService {
   async processModem(modem: any): Promise<Network[]> {
 
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -246,7 +246,7 @@ export class AddNetworkService {
   }
 
   async processModemWithTimeout(modem: any): Promise<Network[] | 'long'> {
-    const TIMEOUT = 50000; // Temps limite en millisecondes
+    const TIMEOUT = 1150000; 
   
     // Promesse de timeout
     const timeoutPromise = new Promise<'long'>((resolve) => {

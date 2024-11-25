@@ -86,6 +86,7 @@ export class AddNetworkController {
       if (data =='long') {
         return null
       }
+      console.log(data);
       
       this.sharedService.setModemData(data);
     const existingNetworks = await this.addNetworkService.checkNetworksExist(modem.id);

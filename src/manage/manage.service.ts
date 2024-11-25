@@ -172,8 +172,8 @@ while (i <= 5) {
       console.log('Tous les réseaux...');
       await page.click('#WLANSSIDConfBar');
 
-      const start = InfoNewWifi.networkFrequency === '2.4' ? 0 : 3;
-      const end = InfoNewWifi.networkFrequency === '2.4' ? 2 : 5;
+      const start = InfoNewWifi.networkFrequency === '2.4' ? 0 : 4;
+      const end = InfoNewWifi.networkFrequency === '2.4' ? 4 : 7;
 
       for (let i = start; i <= end; i++) {
         const essidSelector = `#ESSID\\:${i}`;
@@ -185,7 +185,8 @@ while (i <= 5) {
         try {
           await page.waitForSelector(enableSelector, { visible: true });
           const isChecked = await page.$eval(enableSelector, (el: HTMLInputElement) => el.checked);
-
+          console.log(`#ESSID\\:${i}`);
+          
           if (!isChecked) {
             console.log(`Réseau trouvé à l'index ${i}, avec la fréquence ${InfoNewWifi.networkFrequency} et désactivé.`);
 
@@ -333,6 +334,8 @@ while (i <= 5) {
               break;
             }
             
+          }else{
+            console.log("Aucun reseau trouvé");          
           }
         } catch (error) {
           console.error(`Erreur lors de la vérification du réseau à l'index ${i}:`, error);
@@ -343,11 +346,12 @@ while (i <= 5) {
       console.error("Erreur lors de la configuration du WiFi :", error);
     } finally {
       await browser.close();
-      this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword)
+      this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,InfoNewWifi.prix)
     }
 
     return true;
   }
+  
   
   async UpdatePassword(nameNet:string , newPassword:string,Id:number ){
     const modem = await this.addNetworkService.SearchIfModem(Id)
@@ -369,20 +373,19 @@ while (i <= 5) {
     
   }
 
-  async CreateWifiUpdate(id:number,nomReseau:string,password:string){
+  async CreateWifiUpdate(id:number,nomReseau:string,password:string,prix:number){
     try {
 
       const nouveauReseau = this.ReseauInfoRepository.create({
         modem_id: id,
         essid: nomReseau,
         password: password,
+        prix_unitaire:prix
       });
 
     await this.ReseauInfoRepository.save(nouveauReseau);
-  
-      console.log(`Réseau sauvegardé avec succès :`, nouveauReseau);
+
     } catch (error) {
-      // Étape 3 : Gérer les erreurs
       console.error('Erreur lors de la sauvegarde du réseau :', error);
       throw new Error('Impossible de sauvegarder le réseau');
     }

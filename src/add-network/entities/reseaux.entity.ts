@@ -16,5 +16,8 @@ export class ReseauInfo {
   
     @Column()
     password: string;
+
+    @Column()
+    prix_unitaire:number
   
   }
