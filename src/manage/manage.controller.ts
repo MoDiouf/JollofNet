@@ -3,6 +3,7 @@ import { Request,Response } from 'express';
 import { SharedService } from 'src/shared/shared.service';
 import { ManageService } from './manage.service';
 import { CreateWifiDto } from './DTO/create-wifi.dto';
+import { log } from 'console';
 
 @Controller('app/manage')
 export class ManageController {
@@ -43,6 +44,7 @@ export class ManageController {
      };
   }
 
+  
   @Post()
   async changePassword(
     @Body('network') network: string,
@@ -169,4 +171,69 @@ export class ManageController {
     })  
   }
   }
+
+  @Post('refresh')
+  async refreshModem(@Req() req:Request,@Res() res:Response) {
+    try {
+      const data = this.sharedService.getModemData();
+      const name = req.session.user.name;
+      const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+      const modemUsername = req.session.user.modemUsername
+      const modemPassword = req.session.user.modemPassword
+      const modem = {
+        modem_username: modemUsername,
+        modem_mot_de_passe: modemPassword,
+      };
+      const result = await this.manageService.refreshModem(modem);
+
+     if (result) {
+      return res.status(200).render('user/dashboard', {
+        content: 'manageNetworks', 
+        title: 'Reseau',
+        name:capitalizedname ,
+        data:result,
+        message: 'Réseau mis à jour avec success',
+        messageType: 'success',
+      }) 
+      } else {
+        return res.status(200).render('user/dashboard', {
+          content: 'manageNetworks', 
+          title: 'Reseau',
+          name:capitalizedname ,
+          data:data,
+          message: 'Echec lors de la récuperation des reseax',
+          messageType: 'error',
+        }) 
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'actualisation du modem :', error);
+      return { success: false, message: 'Une erreur interne est survenue.' };
+    }
+  }
+
+  @Post("DeleteModem")
+  async removeModem(@Req() req:Request,@Res() res: Response){
+    const userId = req.session.user.id
+    try {
+      const result = await this.manageService.deleteDataModem(userId);
+      if (result) {
+        return res.json({
+          success: true,
+          message: 'Le modem a été supprimé avec succès.',
+        });
+      } else {
+        return res.json({
+          success: false,
+          message: 'Aucune donnée n\'a été supprimée.',
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: 'Une erreur est survenue lors de la suppression.',
+      });
+    }
+
+  }
 }  
+

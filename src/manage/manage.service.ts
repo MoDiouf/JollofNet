@@ -5,6 +5,7 @@ import { ReseauInfo } from 'src/add-network/entities/reseaux.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddNetworkService } from 'src/add-network/add-network.service';
+import { ModemInfo } from 'src/add-network/entities/modemInfo.entity';
 
 
 @Injectable()
@@ -15,6 +16,8 @@ export class ManageService {
 
     @InjectRepository(ReseauInfo)
     private ReseauInfoRepository: Repository<ReseauInfo>, 
+    @InjectRepository(ModemInfo)
+    private modemInfoRepository: Repository<ModemInfo>, 
     private readonly addNetworkService: AddNetworkService
   ) {}
   async changePassword(
@@ -503,6 +506,38 @@ while (i <= 5) {
     }
   }
   
+  async refreshModem(modem:any):Promise<any>{
+    console.log(modem.modem_mot_de_passe);
+    
+    const networks = await this.addNetworkService.processModem(modem)
+    if (networks) {
+      return networks
+    }else{
+      return false
+    }
+  }
   
+  async deleteDataModem(userId : number){
 
+    try {
+
+      const resultReseau = await this.ReseauInfoRepository.delete({ modem_id: userId });
+
+      const resultModem = await this.modemInfoRepository.delete({ utilisateur_id: userId });
+
+      const totalDeleted = (resultReseau.affected || 0) + (resultModem.affected || 0);
+  
+      if (totalDeleted > 0) {
+        return true
+      } else {
+        return false
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression des données :', error);
+      return {
+        success: false,
+        message: 'Une erreur est survenue lors de la suppression.',
+      };
+    }
+  }
 }

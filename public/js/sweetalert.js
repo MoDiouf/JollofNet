@@ -1,4 +1,10 @@
 
+function refreshModem() {
+
+  fetch('/app/manage/refresh', { method: 'POST' })
+      
+}
+
   function confirmDeleteModem() {
     Swal.fire({
       title: 'Êtes-vous sûr de vouloir supprimer le modem ?',
@@ -9,7 +15,7 @@
       cancelButtonText: 'Annuler'
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch('/api/modem/delete', { method: 'POST' })
+        fetch('/app/manage/DeleteModem', { method: 'POST' })
           .then(response => response.json())
           .then(data => {
             if (data.success) {
@@ -26,13 +32,13 @@
     });
   }
 
-  function confirmResetModem() {
+  function CreateQrCodes() {
     Swal.fire({
-      title: 'Êtes-vous sûr de vouloir réinitialiser le modem ?',
-      text: "Toutes les configurations seront perdues.",
+      title: 'Voulez-vous generer les Qr Codes ?',
+      text: "Veuillez les enregistrer pour eviter de le faire a chaque fois",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Oui, réinitialiser',
+      confirmButtonText: 'Oui, Génerer',
       cancelButtonText: 'Annuler'
     }).then((result) => {
       if (result.isConfirmed) {

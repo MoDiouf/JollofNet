@@ -32,6 +32,17 @@ nav {
 .logo img {
   height: 5rem;
   width: 5rem;
+  bottom: 30%;
+  position: relative;
+  zoom: 2;
+}
+.imgFooter{
+  width: 5rem;
+    height: 5rem;
+    zoom: 2;
+    position: absolute;
+    left: -14%;
+    top: -20%;
 }
 
 /*Styling Links*/
@@ -165,6 +176,7 @@ p {
 .footer__addr {
   margin-right: 1.25em;
   margin-bottom: 2em;
+  position: relative;
 }
 
 .footer__logo {
