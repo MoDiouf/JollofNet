@@ -101,7 +101,7 @@ export class AddNetworkService {
   async processModem(modem: any): Promise<Network[]> {
 
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',

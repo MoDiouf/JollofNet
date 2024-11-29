@@ -13,6 +13,195 @@
   </script>
 <% } %>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+    $('#UpdatePassword').on('submit', function (e) {
+      const password = $('input[name="newpassword"]').val();
+      const minLength = 8;
+      const selectedNetwork = $('select[name="network"]').val();
+
+      
+       // Récupère la valeur sélectionnée
+
+
+      // Vérifie si un réseau est sélectionné
+      if (!selectedNetwork) {
+        e.preventDefault(); // Empêche l'envoi du formulaire
+        Swal.fire({
+          icon: 'error',
+          title: 'Sélection requise',
+          text: 'Veuillez choisir un réseau parmi les options disponibles.',
+          confirmButtonText: 'OK',
+        });
+        return; // Sort de la fonction pour éviter de vérifier le mot de passe
+      }
+      
+      // Vérifie si le mot de passe est valide
+      if (!password || password.length < minLength) {
+        e.preventDefault(); // Empêche l'envoi du formulaire
+        Swal.fire({
+          icon: 'error',
+          title: 'Mot de passe invalide',
+          text: `Le mot de passe doit contenir au moins ${minLength} caractères.`,
+          confirmButtonText: 'OK',
+        });
+      }
+    });
+  });
+
+  $(document).ready(function () {
+    $('#deleteNetwork').on('submit', function (e) {
+      const selectedNetwork = $('select[name="networkDelete"]').val();
+
+      // Vérifie si un réseau est sélectionné
+      if (!selectedNetwork) {
+        e.preventDefault(); // Empêche l'envoi du formulaire
+        Swal.fire({
+          icon: 'error',
+          title: 'Sélection requise',
+          text: 'Veuillez choisir un réseau parmi les options disponibles.',
+          confirmButtonText: 'OK',
+        });
+        return; 
+      }
+      
+     
+    });
+  });
+  
+
+  $(document).ready(function () {
+    $('#createNewNetwork').on('submit', function (e) {
+      const password = $('input[name="newpassword"]').val();
+      const minLength = 8;
+      const selectedNetwork = $('select[name="networkDelete"]').val();
+
+      // Vérifie si un réseau est sélectionné
+      if (!selectedNetwork) {
+        e.preventDefault(); // Empêche l'envoi du formulaire
+        Swal.fire({
+          icon: 'error',
+          title: 'Sélection requise',
+          text: 'Veuillez choisir un réseau parmi les options disponibles.',
+          confirmButtonText: 'OK',
+        });
+        return; 
+      }
+      
+     
+    });
+  });
+  
+  
+</script>
+<script>
+  $(document).ready(function () {
+    // Gestion de l'affichage conditionnel des champs
+    $('#network-payment-select').on('change', function () {
+      const paymentOption = $(this).val();
+      if (paymentOption === 'paid') {
+        $('#price-group').show();
+        $('#prix').attr('required', true);
+      } else {
+        $('#price-group').hide();
+        $('#prix').val('').removeAttr('required');
+      }
+    });
+
+    $('#scannable').on('change', function () {
+      if ($(this).is(':checked')) {
+        $('#mac-address-group').show();
+        $('.mac').attr('required', true);
+      } else {
+        $('#mac-address-group').hide();
+        $('.mac').val('').removeAttr('required');
+      }
+    });
+
+    // Afficher le champ de sécurité réseau seulement si "Privé" est sélectionné
+    $('#network-visibility-select').on('change', function () {
+      const visibility = $(this).val();
+      if (visibility === 'private') {
+        $('#network-security-select').show();
+        $('#network-security-select').attr('required', true);
+      } else {
+        $('#network-security-select').hide();
+        $('#network-security-select').removeAttr('required');
+      }
+    });
+
+    // Validation lors de la soumission
+    $('#createNewNetwork').on('submit', function (e) {
+      const networkName = $('input[name="nomReseau"]').val();
+      const networkVisibility = $('#network-visibility-select').val();
+      const networkFrequency = $('#network-frequency-select').val();
+      const networkSecurity = $('#network-security-select').val();
+      const paymentOption = $('#network-payment-select').val();
+      const price = $('#prix').val();
+      const minPrice = 1000;
+      const macFields = $('.mac');
+      const password = $('input[name="newpasseword"]').val();
+      const minLength = 8;
+
+      // Vérifie que tous les champs obligatoires sont remplis
+      if (!networkName || !networkVisibility || !networkFrequency || (networkVisibility === 'private' && !networkSecurity) || !paymentOption) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Champs manquants',
+          text: 'Veuillez remplir tous les champs obligatoires.',
+          confirmButtonText: 'OK',
+        });
+        return;
+      }
+
+      // Validation du prix si le réseau est payant
+      if (paymentOption === 'paid' && (!price || price < minPrice)) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Prix invalide',
+          text: `Le prix doit être supérieur ou égal à ${minPrice} FCFA.`,
+          confirmButtonText: 'OK',
+        });
+        return;
+      }
+
+      // Validation des adresses MAC si scannable
+      if ($('#scannable').is(':checked')) {
+        let macValid = true;
+        macFields.each(function () {
+          if (!$(this).val().match(/^[0-9A-Fa-f]{2}$/)) {
+            macValid = false;
+          }
+        });
+
+        if (!macValid) {
+          e.preventDefault();
+          Swal.fire({
+            icon: 'error',
+            title: 'Adresse MAC invalide',
+            text: 'Chaque segment de l’adresse MAC doit être un code hexadécimal à deux caractères.',
+            confirmButtonText: 'OK',
+          });
+          return;
+        }
+      }
+
+      // Validation du mot de passe
+      if (!password || password.length < minLength) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Mot de passe invalide',
+          text: `Le mot de passe doit contenir au moins ${minLength} caractères.`,
+          confirmButtonText: 'OK',
+        });
+      }
+    });
+  });
+</script>
 
 
 <div class="buttons">
@@ -56,7 +245,7 @@
 
     <h2 class="toggle-section">Créer un réseau</h2>
     <div class="section-content newnet">
-      <form method="post" action="/app/manage/newWifi">
+      <form method="post" action="/app/manage/newWifi" id="createNewNetwork">
         <div class="row">
           <div class="input-group input-group-icon">
             <input type="text" placeholder="Nom réseau" name="nomReseau" required />
@@ -144,7 +333,7 @@
 
     <h2 class="toggle-section">Supprimer un reseau</h2>
     <div class="section-content newnet">
-      <form method="post" class="columnStyle" action="/app/manage/deleteWifi">
+      <form method="post" class="columnStyle" action="/app/manage/deleteWifi" id="deleteNetwork">
         <select name="networkDelete">
           <option value="" disabled selected>Réseau</option>
           <% 
@@ -164,7 +353,7 @@
 
     <h2 class="toggle-section">Modifier mot de passe</h2>
     <div class="section-content newnet">
-      <form method="post" action="/app/manage">
+      <form method="post" action="/app/manage" id="UpdatePassword">
         <select name="network">
           <option value="" disabled selected>Réseau</option>
           <% 
