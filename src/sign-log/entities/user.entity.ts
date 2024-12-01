@@ -14,5 +14,13 @@ export class User {
   @Column()
   mot_de_passe: string; // Date et heure de la connexion
 
+  @Column()
+  prenom: string;
+
+  @Column()
+  nom: string;
+
+  @Column()
+  numero_de_tel: string;
   
 }

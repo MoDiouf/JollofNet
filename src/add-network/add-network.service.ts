@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Network } from './interfaces/network.interface';
 import { ReseauInfo } from './entities/reseaux.entity';
+import { SharedService } from 'src/shared/shared.service';
 @Injectable()
 export class AddNetworkService {
   constructor(
@@ -12,6 +13,7 @@ export class AddNetworkService {
     private modemInfoRepository: Repository<ModemInfo>, 
     @InjectRepository(ReseauInfo)
     private ReseauInfoRepository: Repository<ReseauInfo>, 
+    private readonly sharedService: SharedService,
   ) {}
   private readonly baseURL = 'https://192.168.1.1';
 
@@ -97,6 +99,10 @@ export class AddNetworkService {
     } else {
       return null;
     }
+  }
+  async fastUpdateModem(modem){
+   const data = await this.processModem(modem)
+   this.sharedService.setModemData(data)
   }
   async processModem(modem: any): Promise<Network[]> {
 

@@ -1,9 +1,20 @@
 
 function refreshModem() {
-
   fetch('/app/manage/refresh', { method: 'POST' })
-      
+    .then(response => {
+      if (response.redirected) {
+        // Si le serveur redirige, changer l'URL du navigateur
+        window.location.href = response.url;
+      } else {
+        // Sinon, gérer la réponse comme vous le souhaitez
+        return response.json(); // Si vous attendez un JSON
+      }
+    })
+    .catch(error => {
+      console.error('Erreur lors de la requête de rafraîchissement du modem :', error);
+    });
 }
+
 
   function confirmDeleteModem() {
     Swal.fire({

@@ -506,9 +506,7 @@ while (i <= 5) {
     }
   }
   
-  async refreshModem(modem:any):Promise<any>{
-    console.log(modem.modem_mot_de_passe);
-    
+  async refreshModem(modem:any):Promise<any>{  
     const networks = await this.addNetworkService.processModem(modem)
     if (networks) {
       return networks
@@ -539,5 +537,11 @@ while (i <= 5) {
         message: 'Une erreur est survenue lors de la suppression.',
       };
     }
+  }
+
+  async getDataModem(idUser:number){
+
+    return await this.modemInfoRepository.findOne({where:{utilisateur_id : idUser}})
+
   }
 }

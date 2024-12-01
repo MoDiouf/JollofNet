@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" href="/css/dash.css" />
   <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script defer src="/js/homeNav.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <title><%= title %></title>
 </head>
 <body>
@@ -17,16 +19,16 @@
     <nav>
       <ul>
         <li>
-          <a href="/app/addNetwork" data-title="Projects">Ajouter un réseau</a>
+          <a href="/app/addNetwork" data-title="Projects"><i class="fas fa-network-wired" style="margin-right: 10px;"></i>Ajouter un réseau</a>
         </li>
         <li>
-          <a href="/app/manage" data-title="Manage">Gérer mes réseaux</a>
+          <a href="/app/manage" data-title="Manage"><i class="fas fa-cogs" style="margin-right: 10px;"></i>Gérer mes réseaux</a>
         </li>
         <li>
-          <a href="/app/statistics" data-title="Statistique">Statistiques</a>
+          <a href="/app/statistics" data-title="Statistique"> <i class="fas fa-chart-bar" style="margin-right: 10px;"></i>Statistiques</a>
         </li>
         <li>
-          <a href="/app/profil" data-title="profil">Profil</a>
+          <a href="/app/profil" data-title="profil"> <i class="fas fa-user" style="margin-right: 10px;"></i>Profil</a>
         </li>
       </ul>
     </nav>
@@ -45,7 +47,7 @@
         <%- include('./manageNet') %>
       <% } else if (content === 'statistics') { %>
         <%- include('./statistique') %>
-      <% } else if (content === 'settings') { %>
+      <% } else if (content === 'profil') { %>
         <%- include('./profil') %>
       <% } %>
     </div>
@@ -67,13 +69,56 @@
     });
     
     document.querySelectorAll('.toggle-section').forEach((heading) => {
-      heading.addEventListener('click', function () {
-        const content = this.nextElementSibling;
-        if (content) {
-          content.style.display = content.style.display === 'none' ? 'block' : 'none';
+  heading.addEventListener('click', function () {
+    const content = this.nextElementSibling; // La section de contenu associée
+    if (content) {
+      // Fermer les autres sections si vous voulez un seul contenu ouvert
+      document.querySelectorAll('.section-content').forEach((otherContent) => {
+        if (otherContent !== content) {
+          // Animation de fermeture pour les autres sections ouvertes
+          anime({
+            targets: otherContent,
+            opacity: [1, 0],
+            height: [otherContent.scrollHeight, 0], // Animation de hauteur
+            duration: 500,
+            easing: 'easeInQuad',
+            complete: function () {
+              otherContent.style.display = 'none';
+            }
+          });
         }
       });
-    });
+
+      // Ouvrir ou fermer la section cliquée
+      if (content.style.display === 'none' || content.style.display === '') {
+        // Réinitialiser la hauteur avant l'animation pour éviter le chevauchement
+        content.style.display = 'block';
+        content.style.height = '0';
+        content.offsetHeight; // Re-calculer la hauteur pour forcer le recalcul du style
+
+        anime({
+          targets: content,
+          opacity: [0, 1],
+          height: [0, content.scrollHeight], // Transition de hauteur dynamique
+          duration: 500,
+          easing: 'easeOutQuad',
+        });
+      } else {
+        // Cacher la section avec animation
+        anime({
+          targets: content,
+          opacity: [1, 0],
+          height: [content.scrollHeight, 0], // Transition de hauteur dynamique
+          duration: 500,
+          easing: 'easeInQuad',
+          complete: function () {
+            content.style.display = 'none';
+          }
+        });
+      }
+    }
+  });
+});
 
     document.querySelectorAll('nav a').forEach((link) => {
       link.addEventListener('click', function () {

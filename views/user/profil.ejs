@@ -1,3 +1,73 @@
-<section id="Settings" style="display: none;">
-    <h1 style="color: black">Settings</h1>
-  </section>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<% if (message !== null && messageType !== null) { %>
+  <script>
+    Toastify({
+      text: "<%= message %>",
+      backgroundColor: "<%= messageType === 'success' ? '#4CAF50' : '#FF6347' %>", // Success = Green, Error = Red
+      duration: 3000,  
+      close: true,     
+
+    }).showToast();
+  </script>
+<% } %>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-6 uxa-form-group mt-5">
+
+      <h1 class="text-center mt-5 mb-2"><%= data.username %></h1>
+
+      <div class="uxa-user-avatar">
+        <img src="https://s-media-cache-ak0.pinimg.com/564x/07/3d/4c/073d4c881442c782d2cefed3e7e814f2.jpg" alt="User avatar">
+      </div>
+      
+      
+      <form class="mt-5 mb-5" method="post" action="/app/profil/updateUser" id="updateUser">
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" class="form-control" id="username" name="updateUser[username]" placeholder="Username" value="<%= name %>" required>
+        </div>
+    
+        <div class="form-group">
+            <label for="email">Your Email Address</label>
+            <input type="email" class="form-control" id="email" name="updateUser[email]" placeholder="Enter email" value="<%= data.email %>" required>
+        </div>
+    
+        <div class="form-group">
+            <label for="prenom">Prenom</label>
+            <%if(data.prenom){%>
+            <input type="text" class="form-control" id="prenom" name="updateUser[prenom]" placeholder="Enter your First Name" value="<%= data.prenom %>">
+
+            <%}else{%>
+              <input type="text" class="form-control" id="prenom" name="updateUser[prenom]" placeholder="Enter your First Name">
+              <%}%>
+        </div>
+    
+        <div class="form-group">
+          <label for="nom">Nom</label>
+          <% if(data.nom) { %>
+              <input type="text" class="form-control" id="nom" name="updateUser[nom]" placeholder="Enter your Last Name" value="<%= data.nom %>">
+          <% } else { %>
+              <input type="text" class="form-control" id="nom" name="updateUser[nom]" placeholder="Enter your Last Name">
+          <% } %>
+      </div>
+    
+      <div class="form-group">
+        <label for="tel">Numéro de téléphone</label>
+        <% if(data.numero_de_tel) { %>
+            <input type="tel" class="form-control" id="tel" name="updateUser[numero_de_tel]" placeholder="Enter your phone number" value="<%= data.numero_de_tel %>">
+        <% } else { %>
+            <input type="tel" class="form-control" id="tel" name="updateUser[numero_de_tel]" placeholder="Enter your phone number">
+        <% } %>
+    </div>
+        
+        <button type="submit" class="btn btn-success"><i class="fa fa-save mr-2"></i> Update Account Details</button>
+    </form>
+    
+      
+      
+
+    </div>
+  </div>
+</div>

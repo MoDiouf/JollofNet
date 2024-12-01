@@ -51,6 +51,13 @@ export class AddNetworkController {
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     const data = await this.addNetworkService.AddModem(username,password,idUser)
     //const UpdateNetwork = this.addNetworkService.UpdateNetworks(idUser)
+    const modem = {
+      modem_username: username,
+      modem_mot_de_passe: password,
+    };
+    this.addNetworkService.fastUpdateModem(modem)
+    req.session.user.modemUsername = username
+    req.session.user.modemPassword = password
     if (data) {
       return res.render('user/dashboard', {
         content: 'addNetwork', 
