@@ -63,6 +63,7 @@
     </div>
         
         <button type="submit" class="btn btn-success"><i class="fa fa-save mr-2"></i> Update Account Details</button>
+        <button class="deconnexion" onclick="logOut()">Deconnexion</button>
     </form>
     
       
@@ -71,3 +72,18 @@
     </div>
   </div>
 </div>
+<script>
+  async function logOut() {
+    const response = await fetch('/app/profil/logOut', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', 
+      }
+    });
+    if (response.ok) {
+      window.location.href = '/signuplogin';
+    } else {
+      console.error('Erreur de déconnexion');
+    }
+  }
+</script>

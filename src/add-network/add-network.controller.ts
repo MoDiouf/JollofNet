@@ -11,8 +11,13 @@ export class AddNetworkController {
   ) {}
 
   @Get()
-  @Render('user/dashboard')
   async getAddNetwork(@Req() req: Request, @Res() res: Response) {
+    const user = req.session.user;
+    if (!user || !user.session) {
+      return res.redirect('/signuplogin');  // Redirige vers la page de connexion si la session est invalide
+    }
+    console.log(req.session.user)
+    
     const name = req.session.user.name;
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     let modemData = this.sharedService.getModemData();
@@ -21,25 +26,23 @@ export class AddNetworkController {
     }
     
     if (modemData == null) {
-      const immediateResponse = { 
-        title: 'Ajouter un réseau', 
-        content: 'addNetwork', 
+      return res.render('user/dashboard', {
+        title: 'Ajouter un réseau',
+        content: 'addNetwork',
         name: capitalizedname,
         modemData,
-        message: 'Connexion lente actualiser ulterieurement',
-        messageType: 'error', 
-      };
-      return immediateResponse
+        message: 'Connexion lente, actualiser ultérieurement',
+        messageType: 'error',
+      });
     }
-    const immediateResponse = { 
-      title: 'Ajouter un réseau', 
-      content: 'addNetwork', 
+    return res.render('user/dashboard', {
+      title: 'Ajouter un réseau',
+      content: 'addNetwork',
       name: capitalizedname,
       modemData,
       message: null,
-      messageType: null, 
-    };
-    return immediateResponse;
+      messageType: null,
+    });
   }
 
   @Post()

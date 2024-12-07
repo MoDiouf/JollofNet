@@ -13,8 +13,7 @@ export class ManageController {
   ) {}
 
   @Get()
-  @Render('user/dashboard')
-  async getManage(@Req() req:Request) {
+  async getManage(@Req() req:Request, @Res() res:Response) {
 
     const data = this.sharedService.getModemData();
     const name = req.session.user.name;
@@ -22,14 +21,14 @@ export class ManageController {
   
     if (!data) {
       console.log('Pas de données disponibles');
-      return { 
+      return res.render('user/dashboard',{ 
         message: 'success', 
         messageType: 'Actualiser la page', // Ajouter un type de message
         title: 'Réseau', 
         content: 'manageNetworks', 
         data: null,
         name: capitalizedname 
-      };
+      });
     }
   
 
@@ -174,6 +173,12 @@ export class ManageController {
 
   @Post('refresh')
 async refreshModem(@Req() req: Request, @Res() res: Response) {
+  const user = req.session.user;
+    console.log(user);
+    
+    if (!user || !user.session) {
+      return res.redirect('/signuplogin');  // Redirige vers la page de connexion si la session est invalide
+    }
   try {
     const idUser = req.session.user.id;
     const dataModem = await this.manageService.getDataModem(idUser);

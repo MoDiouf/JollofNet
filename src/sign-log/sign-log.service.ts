@@ -43,7 +43,9 @@ async AddUser(name: string, email: string, password: string): Promise<User> {
     });
 
     if (existingUser) {
-      throw new Error('email ou nom d\'utilisateur existe déjà');
+      const user = await this.SearchUser(name,password)
+      return user
+      //throw new Error('email ou nom d\'utilisateur existe déjà');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

@@ -20,6 +20,9 @@ import { ProfilService } from './profil/profil.service';
 import { ManageController } from './manage/manage.controller';
 import { SharedModule } from './shared/shared.module';
 import { ReseauInfo } from './add-network/entities/reseaux.entity';
+import { AuthGoogleController } from './auth-google/auth-google.controller';
+import { AuthModule } from './auth-google/auth-google.module';
+
 
 @Module({
   imports: [
@@ -39,8 +42,9 @@ import { ReseauInfo } from './add-network/entities/reseaux.entity';
     StatistiqueModule,
     ProfilModule,
     SharedModule,
+    AuthModule,
   ],
-  controllers: [AppController, AddNetworkController, ProfilController, ManageController],
+  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController],
   providers: [AppService, AddNetworkService, StatistiqueService, SharedService, ManageService, ProfilService],
 })
 export class AppModule implements NestModule {

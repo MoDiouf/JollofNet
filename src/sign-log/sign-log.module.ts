@@ -12,6 +12,6 @@ import { SharedModule } from 'src/shared/shared.module';
   controllers: [SignLogController],
   imports:[TypeOrmModule.forFeature([User,ModemInfo]),SharedModule],
   providers: [SignLogService,SharedService ],
-  exports:[TypeOrmModule]
+  exports:[TypeOrmModule,SignLogService],
 })
 export class SignLogModule {}

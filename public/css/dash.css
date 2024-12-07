@@ -149,8 +149,6 @@ header {
         left: -32px;
       }
     }
-
-    
   }
 }
 
@@ -515,56 +513,55 @@ select option {
   border-radius: 5px;
   font-size: 20px;
 }
-.buttons{
+.buttons {
   display: flex;
   justify-content: flex-end;
   margin-right: 2%;
   gap: 2%;
   margin-top: 2%;
 }
-.buttons span{
-  padding:10px 20px ;
+.buttons span {
+  padding: 10px 20px;
   background-color: #1cb9f4;
   cursor: pointer;
   margin-top: 2%;
   color: white;
 }
-.mac{
+.mac {
   width: 30px;
   padding-left: 1em !important;
 }
-.columnStyle{
+.columnStyle {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 .section-content {
-	display: none; /* Cacher initialement */
-	overflow: hidden; /* Empêcher les débordements pendant l'animation */
-  }
-  
-  .toggle-section {
-	cursor: pointer; /* Indiquer que l'élément est cliquable */
-  }
-  
-  .toggle-section:hover {
-	color: #1cb9f4; /* Effet au survol */
-  }
+  display: none; /* Cacher initialement */
+  overflow: hidden; /* Empêcher les débordements pendant l'animation */
+}
+
+.toggle-section {
+  cursor: pointer; /* Indiquer que l'élément est cliquable */
+}
+
+.toggle-section:hover {
+  color: #1cb9f4; /* Effet au survol */
+}
 .uxa-form-group {
-  
   background-color: white;
   padding: 2rem;
   box-shadow: 0 0.2rem 0.6rem rgba(50, 50, 50, 0.15);
 }
 
-.buttons span:hover{
+.buttons span:hover {
   box-shadow: #1cb9f4 -4px 0px 4px 0px;
   transition: 0.7s ease;
 }
 .form-group span {
   color: red;
 }
-.form-group{
+.form-group {
   display: flex;
   flex-direction: column;
 }
@@ -588,13 +585,23 @@ select option {
 .uxa-user-avatar img {
   width: 150px;
 }
-.btn-success{
+.btn-success {
   background-color: #1cb9f4;
   color: #fff;
   border-color: #1cb9f4;
   border: 1px solid transparent;
-    padding: .5rem 1rem;
-    font-size: 1rem;
-    border-radius: .25rem;
-    margin-top: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.25rem;
+  margin-top: 20px;
+}
+.deconnexion {
+  background-color: #1cb9f4;
+  color: #fff;
+  border-color: #1cb9f4;
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.25rem;
+  margin-top: 20px;
 }

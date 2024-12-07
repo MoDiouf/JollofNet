@@ -22,5 +22,8 @@ export class User {
 
   @Column()
   numero_de_tel: string;
+
+  /*@Column()
+  profile : string*/
   
 }

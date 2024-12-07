@@ -5,24 +5,29 @@ import { ProfilService } from './profil.service';
 @Controller('app/profil')
 export class ProfilController {
   constructor(private readonly profilService: ProfilService) {}
+
   @Get()
-  @Render('user/dashboard')
-  async getAddProfil(@Req() req: Request) {
+  async getAddProfil(@Req() req: Request ,@Res() res: Response) {
     //const data = this.sharedService.getModemData();
+    const userSession = req.session.user;
+    
+    if (!userSession || !userSession.session) {
+      return res.redirect('/signuplogin');  // La redirection interrompt l'exécution du reste du code
+    }
     const name = req.session.user.name;
     const id = req.session.user.id;
     const capitalizedname =
       name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     const user = await this.profilService.getUserData(id);
 
-    return {
+    return res.render('user/dashboard',{
       title: 'Profil',
       content: 'profil',
       data: user,
       name: capitalizedname,
       message: null,
       messageType: null,
-    };
+    });
   }
 
   @Post('updateUser')
@@ -53,5 +58,10 @@ export class ProfilController {
     }
 
     
+  }
+  @Post('logOut')
+  async logOut(@Res() res:Response,@Req() req: Request){
+    req.session.user = null
+    return res.redirect('/signuplogin')
   }
 }
