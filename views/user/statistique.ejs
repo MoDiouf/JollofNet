@@ -1,3 +1,9 @@
-<section id="Statistique" style="display: none;">
-    <h1 style="color: black">Statistique</h1>
-  </section>
+<section>
+  <div>
+    <span>Gain:</span>
+    <span>0 FCFA</span>
+  </div>
+  <% if (graph) { %>
+    <div id="chart-container"><%- graph %></div>
+  <% } %>
+</section>
