@@ -3,7 +3,82 @@
     <span>Gain:</span>
     <span>0 FCFA</span>
   </div>
-  <% if (graph) { %>
-    <div id="chart-container"><%- graph %></div>
-  <% } %>
+
+  <!-- Canvas pour afficher le graphique -->
+  <canvas id="myChart"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const serverData = <%- JSON.stringify(chartData) %>;
+
+      const chartData = {
+        labels: serverData.labels, // Labels des mois
+        datasets: [
+          {
+            label: 'Connexions',
+            data: serverData.connexion, // Données des connexions
+            backgroundColor: 'rgba(255, 99, 132, 0.5)', // Couleur transparente
+            borderColor: 'rgba(255, 99, 132, 1)', // Couleur du contour
+            yAxisID: 'y', // Associe ce dataset à l'axe Y gauche
+            borderWidth: 2,
+            tension: 0.4, // Lissage des lignes
+          },
+          {
+            label: 'Gains (FCFA)',
+            data: serverData.gains, // Données des gains
+            backgroundColor: 'rgba(54, 162, 235, 0.5)', // Couleur transparente
+            borderColor: 'rgba(54, 162, 235, 1)', // Couleur du contour
+            yAxisID: 'y1', // Associe ce dataset à l'axe Y droit
+            borderWidth: 2,
+            tension: 0.4, // Lissage des lignes
+          },
+        ],
+      };
+
+      // Création du graphique avec deux axes Y
+      const ctx = document.getElementById('myChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line', // Type de graphique
+        data: chartData,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top', // Position de la légende
+            },
+            title: {
+              display: true,
+              text: 'Statistiques : Connexions et Gains par mois',
+            },
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left', // Position de l'axe à gauche
+              title: {
+                display: true,
+                text: 'Connexions',
+              },
+              beginAtZero: true,
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right', // Position de l'axe à droite
+              title: {
+                display: true,
+                text: 'Gains (FCFA)',
+              },
+              grid: {
+                drawOnChartArea: false, // Empêche les lignes de cet axe de traverser le graphique
+              },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    });
+  </script>
 </section>

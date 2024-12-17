@@ -24,6 +24,7 @@ import { AuthGoogleController } from './auth-google/auth-google.controller';
 import { AuthModule } from './auth-google/auth-google.module';
 
 
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({

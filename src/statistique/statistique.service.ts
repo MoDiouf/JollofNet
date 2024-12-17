@@ -1,4 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class StatistiqueService {}
+export class StatistiqueService {
+  
+  
+  async LookUpData(id:number){
+    // ...
+    
+  }
+}
+
+
