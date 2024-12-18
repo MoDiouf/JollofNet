@@ -8,26 +8,30 @@ export class StatistiqueController {
 
   @Get()
   @Render('user/dashboard')
-  async getAddNetwork(@Req() req: Request) {
+  async getStatistics(@Req() req: Request) {
     const name = req.session.user.name;
-    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-    const id = req.session.user.id
-   const getDataStat = await this.statistiqueService.lookUpData(id)
-   console.log(getDataStat);
-   
+    const capitalizedName =
+      name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    const id = req.session.user.id;
+
+    const stats = await this.statistiqueService.lookUpData(id);
+    console.log(stats);
+    
+    const labels = stats.map((entry) => entry.month_year); 
+    const connexion = stats.map((entry) => entry.number_connected);
+    const gains = stats.map((entry) => entry.gain);
+
     const chartData = {
-      labels: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
-      connexion: [46, 100, 82, 20, 79, 58, 54, 91, 77, 87, 65, 76],
-      gains: [18311, 11713, 7918, 5055, 20330, 8827, 17408, 19287, 5390, 7885, 12761, 6545]
+      labels,
+      connexion,
+      gains,
     };
-    
-    console.log(chartData);
-    
-    return { 
+
+    return {
       title: 'Statistiques',
       content: 'statistics',
       name: capitalizedName,
-      chartData
+      chartData,
     };
   }
 }

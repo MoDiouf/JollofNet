@@ -21,13 +21,16 @@ import { SharedModule } from './shared/shared.module';
 import { ReseauInfo } from './add-network/entities/reseaux.entity';
 import { AuthGoogleController } from './auth-google/auth-google.controller';
 import { AuthModule } from './auth-google/auth-google.module';
-import { UserConnected } from './statistique/entities/connected.entity';
+import { UserConnected } from './statistique/entities/userConnected.entity';
 import { StatistiqueModule } from './statistique/statistique.module';
+import { StatistiqueController } from './statistique/statistique.controller';
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
@@ -47,7 +50,7 @@ import { StatistiqueModule } from './statistique/statistique.module';
     StatistiqueModule,
   ],
   controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController],
-  providers: [AppService, AddNetworkService, StatistiqueService, SharedService, ManageService, ProfilService],
+  providers: [AppService, AddNetworkService, SharedService, ManageService, ProfilService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

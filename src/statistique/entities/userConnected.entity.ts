@@ -10,10 +10,10 @@ export class UserConnected {
   gain: number;
 
   @Column({ type: 'int' }) 
-  numberConnected: number;
+  number_connected: number;
 
   @Column({ type: 'date' })  
-  monthYear: string;
+  month_year: string;
 
   @Column({ type: 'int', nullable: true }) 
   id?: number;
