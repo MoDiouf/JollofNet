@@ -12,7 +12,9 @@ export class StatistiqueController {
     const name = req.session.user.name;
     const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     const id = req.session.user.id
-   const getDataStat = await this.statistiqueService.LookUpData(id)
+   const getDataStat = await this.statistiqueService.lookUpData(id)
+   console.log(getDataStat);
+   
     const chartData = {
       labels: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
       connexion: [46, 100, 82, 20, 79, 58, 54, 91, 77, 87, 65, 76],

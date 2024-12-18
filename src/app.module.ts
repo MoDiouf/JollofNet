@@ -11,7 +11,6 @@ import { AddNetworkController } from './add-network/add-network.controller';
 import { AddNetworkModule } from './add-network/add-network.module';
 import { ManageModule } from './manage/manage.module';
 import { StatistiqueService } from './statistique/statistique.service';
-import { StatistiqueModule } from './statistique/statistique.module';
 import { ProfilController } from './profil/profil.controller';
 import { ProfilModule } from './profil/profil.module';
 import { SharedService } from './shared/shared.service';
@@ -22,6 +21,8 @@ import { SharedModule } from './shared/shared.module';
 import { ReseauInfo } from './add-network/entities/reseaux.entity';
 import { AuthGoogleController } from './auth-google/auth-google.controller';
 import { AuthModule } from './auth-google/auth-google.module';
+import { UserConnected } from './statistique/entities/connected.entity';
+import { StatistiqueModule } from './statistique/statistique.module';
 
 
 
@@ -34,16 +35,16 @@ import { AuthModule } from './auth-google/auth-google.module';
       username: 'mohamed',
       password: 'passer',
       database: 'JollofNet',
-      entities: [User,ModemInfo,ReseauInfo],
+      entities: [User,ModemInfo,UserConnected,ReseauInfo],
       synchronize: false,
     }),
     SignLogModule,
     AddNetworkModule,
     ManageModule,
-    StatistiqueModule,
     ProfilModule,
     SharedModule,
     AuthModule,
+    StatistiqueModule,
   ],
   controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController],
   providers: [AppService, AddNetworkService, StatistiqueService, SharedService, ManageService, ProfilService],
