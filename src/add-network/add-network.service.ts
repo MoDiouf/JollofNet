@@ -282,6 +282,7 @@ export class AddNetworkService {
     return;
   }
 
+  
   const reseauxToSave = activeNetworks.map((network) => ({
     modem_id: modemId,
     essid: network.essid,
@@ -296,5 +297,9 @@ export class AddNetworkService {
     const count = await this.ReseauInfoRepository.count({ where: { modem_id: modemId } });
     return count > 0;
   }
+  async AllData(id:number)
+{
+  return  await this.ReseauInfoRepository.find({ where: { modem_id: id } });
+}
   
 }

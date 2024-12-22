@@ -19,12 +19,14 @@ export class AddNetworkController {
     console.log(req.session.user)
     
     const name = req.session.user.name;
-    const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(); 
+    const dataGet = await this.addNetworkService.AllData(user.id)
+    
     let modemData = this.sharedService.getModemData();
     if (!modemData) {
       modemData = await this.fetchModemData(req.session.user.id, req);
     }
-    
+   
     if (modemData == null) {
       return res.render('user/dashboard', {
         title: 'Ajouter un réseau',
@@ -35,6 +37,18 @@ export class AddNetworkController {
         messageType: 'error',
       });
     }
+    //console.log("DataGet",dataGet);
+    
+    modemData.forEach(network => {
+      const matchingData = dataGet.find(data => data.essid === network.essid);
+      if (matchingData) {
+        network.qrCode = matchingData.qrCode;
+      }
+    });
+
+    //console.log("NewModemData",modemData);
+    
+  
     return res.render('user/dashboard', {
       title: 'Ajouter un réseau',
       content: 'addNetwork',

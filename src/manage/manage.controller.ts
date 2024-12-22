@@ -14,11 +14,14 @@ export class ManageController {
 
   @Get()
   async getManage(@Req() req:Request, @Res() res:Response) {
-
+    const user = req.session.user
     const data = this.sharedService.getModemData();
     const name = req.session.user.name;
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toUpperCase();
-  
+    
+    if (!user || !user.session) {
+      return res.redirect('/signuplogin');  // Redirige vers la page de connexion si la session est invalide
+    }
     if (!data) {
       console.log('Pas de données disponibles');
       return res.render('user/dashboard',{ 
@@ -30,17 +33,18 @@ export class ManageController {
         name: capitalizedname 
       });
     }
-  
+    const dataFromDB = await this.manageService.AllData(user.id)
+console.log("GetManage",data);
 
     
-    return { 
+    return res.render('user/dashboard', { 
      title: 'Réseau',
      content: 'manageNetworks',
      data:data,
      name:capitalizedname,
      message: null, 
      messageType: null,
-     };
+     });
   }
 
   
@@ -174,11 +178,9 @@ export class ManageController {
   @Post('refresh')
 async refreshModem(@Req() req: Request, @Res() res: Response) {
   const user = req.session.user;
-    console.log(user);
+    console.log("Refresh",user);
     
-    if (!user || !user.session) {
-      return res.redirect('/signuplogin');  // Redirige vers la page de connexion si la session est invalide
-    }
+    
   try {
     const idUser = req.session.user.id;
     const dataModem = await this.manageService.getDataModem(idUser);
@@ -188,6 +190,8 @@ async refreshModem(@Req() req: Request, @Res() res: Response) {
     };
 
     const result = await this.manageService.refreshModem(modem);
+    console.log("RefreshGet",result);
+    
     this.sharedService.setModemData(result);
 
     if (result) {
@@ -207,7 +211,12 @@ async refreshModem(@Req() req: Request, @Res() res: Response) {
   }
 }
 
+@Post("generate")
+async generateQrCode(@Req() req: Request){
+  const userId = req.session.user.id
 
+  const generate = await this.manageService.generateQrCodes(userId)
+}
   @Post("DeleteModem")
   async removeModem(@Req() req:Request,@Res() res: Response){
     const userId = req.session.user.id

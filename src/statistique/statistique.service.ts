@@ -25,7 +25,7 @@ export class StatistiqueService {
 
     const connectedUser = await this.userConnectedRepository.find({
         where: {
-            id: 1,
+            id: id,
             month_year: MoreThanOrEqual(startOfMonthISO) && LessThan(startOfNextMonthISO),
         },
     });

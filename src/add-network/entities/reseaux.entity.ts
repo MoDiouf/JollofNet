@@ -19,5 +19,9 @@ export class ReseauInfo {
 
     @Column()
     prix_unitaire:number
-  
+    @Column({ type: 'text', nullable: true })
+    qrCode: string;  // Si vous stockez le QR code sous forme de chaîne (base64 ou URL)
+
+    @Column({ type: 'boolean', default: false })
+    payant: boolean;
   }

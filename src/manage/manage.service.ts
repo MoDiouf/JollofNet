@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddNetworkService } from 'src/add-network/add-network.service';
 import { ModemInfo } from 'src/add-network/entities/modemInfo.entity';
+import axios from 'axios';
+
 
 
 @Injectable()
@@ -544,4 +546,48 @@ while (i <= 5) {
     return await this.modemInfoRepository.findOne({where:{utilisateur_id : idUser}})
 
   }
+  async generateQrCodes(id: number) {
+    // Récupérer les réseaux pour un modem_id spécifique
+    const reseaux = await this.ReseauInfoRepository.find({ where: { modem_id: id } });
+
+    // Vérifier si des réseaux ont été trouvés
+    if (reseaux.length === 0) {
+      console.log('Aucun réseau trouvé pour ce modem_id');
+      return;
+    }
+
+    // Pour chaque réseau, générer un QR code en utilisant l'API de goqr.me
+    for (const reseau of reseaux) {
+      try {
+        // Créer un QR code pour chaque réseau (par exemple, pour le ESSID et le mot de passe)
+        const qrData = `WIFI:S:${reseau.essid};T:${reseau.encryption_type || 'WPA'};P:${reseau.password};;`;
+
+        // Requête vers l'API goqr.me pour générer le QR code
+        const response = await axios.get('https://api.qrserver.com/v1/create-qr-code/', {
+          params: {
+            data: qrData,  // Les données à encoder dans le QR code
+            size: '200x200'  // Taille du QR code (ajustable)
+          },
+          responseType: 'arraybuffer'  // Pour récupérer l'image en binaire
+        });
+
+        // Convertir la réponse en base64 pour l'enregistrer dans la base de données
+        const qrCode = `data:image/png;base64,${Buffer.from(response.data).toString('base64')}`;
+
+        // Sauvegarder le QR code dans la base de données
+        reseau.qrCode = qrCode;
+        await this.ReseauInfoRepository.save(reseau);
+
+        console.log(`QR code généré pour le réseau ${reseau.essid}`);
+      } catch (error) {
+        console.error('Erreur lors de la génération du QR code:', error);
+      }
+    }
+  }
+
+ async AllData(id:number)
+{
+  return  await this.ReseauInfoRepository.find({ where: { modem_id: id } });
+}
+
 }

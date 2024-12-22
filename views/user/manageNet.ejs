@@ -207,10 +207,13 @@ $(document).ready(function () {
   <div>
     <span onclick="refreshModem()">Actualiser</span>
   </div>
-  <div>
+  <% if (data && data.length) { %>
+   <div>
     <span onclick="confirmDeleteModem()">Supprimer le modem</span>
     <span onclick="CreateQrCodes()">Generer les Qr Code</span>
   </div>
+  <% } %>
+  
 </div>
 
 <section id="Manage">
@@ -241,6 +244,32 @@ $(document).ready(function () {
         
       </div>
     </div>
+
+    <h2 class="toggle-section">Mes QrCodes</h2>
+<div class="section-content newnet">
+  <% if (data && data.length > 0) { %>
+    <div>
+      <ul class="manageDataQr">
+        <% data.forEach((network) => { %>
+          <% if (network.enableChecked === true) { %>
+            <li class="dataQr">
+              <span><%= network.essid %></span>
+              <span>
+                <% if (network.qrCode) { %>
+                  <img src="<%= network.qrCode %>" alt="QR Code" />
+                <% } else { %>
+                  Pas de QR Code disponible
+                <% } %>
+              </span>
+            </li>
+          <% } %>
+        <% }) %>
+      </ul>
+    </div>
+ 
+</div>
+<% } %>
+
 
     <h2 class="toggle-section">Créer un réseau</h2>
     <div class="section-content newnet">
@@ -381,7 +410,7 @@ $(document).ready(function () {
     </div>
     
   <% } else { %>
-    <h1>Aucune donnée</h1>
+    <div class="noData">Aucune donnée</h1>
   <% } %>
 </section>
 

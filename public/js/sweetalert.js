@@ -6,8 +6,7 @@ function refreshModem() {
         // Si le serveur redirige, changer l'URL du navigateur
         window.location.href = response.url;
       } else {
-        // Sinon, gérer la réponse comme vous le souhaitez
-        return response.json(); // Si vous attendez un JSON
+        
       }
     })
     .catch(error => {
@@ -45,27 +44,34 @@ function refreshModem() {
 
   function CreateQrCodes() {
     Swal.fire({
-      title: 'Voulez-vous generer les Qr Codes ?',
-      text: "Veuillez les enregistrer pour eviter de le faire a chaque fois",
+      title: 'Voulez-vous générer les QR Codes ?',
+      text: "Tous vos utilisateurs risquent d'être déconnectés",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Oui, Génerer',
+      confirmButtonText: 'Oui, Générer',
       cancelButtonText: 'Annuler'
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch('/api/modem/reset', { method: 'POST' })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              Swal.fire('Réinitialisé!', 'Le modem a été réinitialisé.', 'success');
-              // Reload the page or update the UI accordingly
-            } else {
-              Swal.fire('Erreur!', data.message || 'Une erreur est survenue.', 'error');
-            }
-          })
-          .catch(error => {
-            Swal.fire('Erreur!', 'Impossible de réinitialiser le modem.', 'error');
-          });
+        // Envoi de la requête POST pour générer les QR codes
+        fetch('/app/manage/generate', { 
+          method: 'POST' 
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            Swal.fire('Succès!', 'Les QR codes ont été générés avec succès.', 'success').then(() => {
+              // Recharger la page après le succès
+              location.reload();
+            });
+          } else {
+            Swal.fire('Erreur!', 'Une erreur est survenue lors de la génération des QR codes.', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Erreur:', error);
+          Swal.fire('Erreur!', 'Une erreur est survenue.', 'error');
+        });
       }
     });
   }
+  

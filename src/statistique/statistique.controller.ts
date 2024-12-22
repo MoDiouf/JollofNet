@@ -15,16 +15,18 @@ export class StatistiqueController {
     const id = req.session.user.id;
 
     const stats = await this.statistiqueService.lookUpData(id);
-    console.log(stats);
+
     
     const labels = stats.map((entry) => entry.month_year); 
     const connexion = stats.map((entry) => entry.number_connected);
     const gains = stats.map((entry) => entry.gain);
+    const lastGain = gains[gains.length - 1];
 
     const chartData = {
       labels,
       connexion,
       gains,
+      lastGain
     };
 
     return {

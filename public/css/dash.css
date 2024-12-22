@@ -19,6 +19,26 @@ ul {
   margin-top: 0;
   padding: 0;
 }
+.gainStyle{
+  width: 100%;
+  height: 60px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 20px ;
+}
+.noData{
+  text-align: center;
+    font-weight: normal;
+    color: #f6f6ef;
+    line-height: 60px;
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: 2px;
+    background-color: #1cb9f4;
+    border-bottom: 1px solid rgba(101, 116, 134, 0.57);
+    margin-top: 20px;
+}
 a {
   cursor: pointer;
   display: block;
@@ -177,16 +197,20 @@ main {
     text-decoration: none;
     transition: all 0.5s;
 
-    &:before {
-      content: '\1f464';
-      font-size: 38px;
-      position: absolute;
-      left: -50px;
-      font-family: 'entypo';
-    }
+    
   }
 }
-
+.dataQr{
+  display: flex;
+  justify-content: space-evenly;
+  flex-direction: column;
+  text-align: center;
+}
+.manageDataQr{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2%;
+}
 a:hover {
   color: #33526b;
   transition: all 0.5s;

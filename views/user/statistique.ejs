@@ -1,10 +1,8 @@
 <section>
-  <div>
+  <div class="gainStyle">
     <span>Gain:</span>
-    <span>0 FCFA</span>
+    <span style="font-weight: 700;"><%= chartData.lastGain%> FCFA</span>
   </div>
-
-  <!-- Canvas pour afficher le graphique -->
   <canvas id="myChart"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -42,6 +40,7 @@
         type: 'line', // Type de graphique
         data: chartData,
         options: {
+         
           responsive: true,
           plugins: {
             legend: {
