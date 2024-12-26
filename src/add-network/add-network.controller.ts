@@ -14,40 +14,40 @@ export class AddNetworkController {
   async getAddNetwork(@Req() req: Request, @Res() res: Response) {
     const user = req.session.user;
     if (!user || !user.session) {
-      return res.redirect('/signuplogin');  // Redirige vers la page de connexion si la session est invalide
+      return res.redirect('/signuplogin'); // Redirige vers la page de connexion si la session est invalide
     }
-    console.log(req.session.user)
-    
+  
+    console.log(req.session.user);
+  
     const name = req.session.user.name;
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(); 
-    const dataGet = await this.addNetworkService.AllData(user.id)
-    
+    const dataGet = await this.addNetworkService.AllData(user.id);
+  
     let modemData = this.sharedService.getModemData();
     if (!modemData) {
       modemData = await this.fetchModemData(req.session.user.id, req);
     }
-   
-    if (modemData == null) {
+  
+    // Vérifiez si `modemData` est un tableau
+    if (!Array.isArray(modemData)) {
+      console.error('Modem data is not an array:', modemData);
       return res.render('user/dashboard', {
         title: 'Ajouter un réseau',
         content: 'addNetwork',
         name: capitalizedname,
-        modemData,
-        message: 'Connexion lente, actualiser ultérieurement',
-        messageType: 'error',
+        modemData: [], // Utilisation d'un tableau vide comme fallback
+        message: 'Ajouter un modem',
+        messageType: 'success',
       });
     }
-    //console.log("DataGet",dataGet);
-    
+  
+    // Si `modemData` est valide, faites correspondre les QR codes
     modemData.forEach(network => {
       const matchingData = dataGet.find(data => data.essid === network.essid);
       if (matchingData) {
         network.qrCode = matchingData.qrCode;
       }
     });
-
-    //console.log("NewModemData",modemData);
-    
   
     return res.render('user/dashboard', {
       title: 'Ajouter un réseau',
@@ -58,6 +58,7 @@ export class AddNetworkController {
       messageType: null,
     });
   }
+  
 
   @Post()
   async AddModem(@Req() req:Request ,@Body() body:any,@Res() res:Response){
@@ -68,11 +69,15 @@ export class AddNetworkController {
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     const data = await this.addNetworkService.AddModem(username,password,idUser)
     //const UpdateNetwork = this.addNetworkService.UpdateNetworks(idUser)
+
+    
     const modem = {
       modem_username: username,
       modem_mot_de_passe: password,
     };
     this.addNetworkService.fastUpdateModem(modem)
+    //this.updateFastNetwork(idUser,req)
+    //this.fetchModemData(idUser,req)
     req.session.user.modemUsername = username
     req.session.user.modemPassword = password
     if (data) {
@@ -96,7 +101,13 @@ export class AddNetworkController {
     }
   }
 
+  /*async updateFastNetwork(idUser:number,req){
 
+   const fastData= await this.fetchModemData(idUser,req)
+   console.log("FastData",fastData);
+   
+
+  }*/
   private async fetchModemData(IdUser: any,req:Request) {
     try {
       const modem = await this.addNetworkService.SearchIfModem(IdUser);

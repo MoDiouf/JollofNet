@@ -1,5 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsString, IsIn, IsOptional, IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsIn,
+  IsOptional,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+} from 'class-validator';
 
 export class CreateWifiDto {
   @IsString()
@@ -19,15 +26,23 @@ export class CreateWifiDto {
   @IsIn(['free', 'paid'])
   networkPayment: string;
 
-  @Transform(({ value }) => parseFloat(value), { toClassOnly: true })
-  @IsNumber()
-  @IsOptional() // Si le prix peut être optionnel, ajoutez cette ligne
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') {
+      return 0; // Si la valeur est vide, null ou undefined, on retourne 0
+    }
+    const parsedValue = parseFloat(value); // Convertir en nombre
+    return isNaN(parsedValue) ? 0 : parsedValue; // Si la valeur n'est pas valide, on retourne 0
+  }, { toClassOnly: true })
+  @IsNumber({}, { message: 'Prix doit être un nombre valide.' })
+  @IsOptional()
   prix: number;
   
   
+  
+
   @Transform(({ value }) => value === 'on', { toClassOnly: true })
   @IsBoolean()
-  @IsOptional() 
+  @IsOptional()
   scannable: boolean;
 
   @IsString()

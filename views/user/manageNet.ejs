@@ -18,14 +18,14 @@ $(document).ready(function () {
     $('#UpdatePassword').on('submit', function (e) {
       const password = $('input[name="newpassword"]').val();
       const minLength = 8;
-      const selectedNetwork = $('select[name="network"]').val();
+      const selectedNetworks = $('select[name="network"]').val();
 
       
        // Récupère la valeur sélectionnée
 
 
       // Vérifie si un réseau est sélectionné
-      if (!selectedNetwork) {
+     /* if (!selectedNetworks) {
         e.preventDefault(); // Empêche l'envoi du formulaire
         Swal.fire({
           icon: 'error',
@@ -34,7 +34,7 @@ $(document).ready(function () {
           confirmButtonText: 'OK',
         });
         return; // Sort de la fonction pour éviter de vérifier le mot de passe
-      }
+      }*/
       
       // Vérifie si le mot de passe est valide
       if (!password || password.length < minLength) {
@@ -51,10 +51,10 @@ $(document).ready(function () {
 
   $(document).ready(function () {
     $('#deleteNetwork').on('submit', function (e) {
-      const selectedNetwork = $('select[name="networkDelete"]').val();
+      const selectedNetworke = $('select[name="networkDelete"]').val();
 
       // Vérifie si un réseau est sélectionné
-      if (!selectedNetwork) {
+      /*if (!selectedNetworke) {
         e.preventDefault(); // Empêche l'envoi du formulaire
         Swal.fire({
           icon: 'error',
@@ -63,7 +63,7 @@ $(document).ready(function () {
           confirmButtonText: 'OK',
         });
         return; 
-      }
+      }*/
       
      
     });
@@ -77,7 +77,7 @@ $(document).ready(function () {
       const selectedNetwork = $('select[name="networkDelete"]').val();
 
       // Vérifie si un réseau est sélectionné
-      if (!selectedNetwork) {
+      /*if (!selectedNetwork) {
         e.preventDefault(); // Empêche l'envoi du formulaire
         Swal.fire({
           icon: 'error',
@@ -86,7 +86,7 @@ $(document).ready(function () {
           confirmButtonText: 'OK',
         });
         return; 
-      }
+      }*/
       
      
     });
@@ -96,110 +96,101 @@ $(document).ready(function () {
 </script>
 <script>
   $(document).ready(function () {
-    // Gestion de l'affichage conditionnel des champs
-    $('#network-payment-select').on('change', function () {
-      const paymentOption = $(this).val();
-      if (paymentOption === 'paid') {
-        $('#price-group').show();
-        $('#prix').attr('required', true);
-      } else {
-        $('#price-group').hide();
-        $('#prix').val('').removeAttr('required');
-      }
-    });
-
-    $('#scannable').on('change', function () {
-      if ($(this).is(':checked')) {
-        $('#mac-address-group').show();
-        $('.mac').attr('required', true);
-      } else {
-        $('#mac-address-group').hide();
-        $('.mac').val('').removeAttr('required');
-      }
-    });
-
-    // Afficher le champ de sécurité réseau seulement si "Privé" est sélectionné
-    $('#network-visibility-select').on('change', function () {
-      const visibility = $(this).val();
-      if (visibility === 'private') {
-        $('#network-security-select').show();
-        $('#network-security-select').attr('required', true);
-      } else {
-        $('#network-security-select').hide();
-        $('#network-security-select').removeAttr('required');
-      }
-    });
-
-    // Validation lors de la soumission
-    $('#createNewNetwork').on('submit', function (e) {
-      const networkName = $('input[name="nomReseau"]').val();
-      const networkVisibility = $('#network-visibility-select').val();
-      const networkFrequency = $('#network-frequency-select').val();
-      const networkSecurity = $('#network-security-select').val();
-      const paymentOption = $('#network-payment-select').val();
-      const price = $('#prix').val();
-      const minPrice = 1000;
-      const macFields = $('.mac');
-      const password = $('input[name="newpasseword"]').val();
-      const minLength = 8;
-
-      // Vérifie que tous les champs obligatoires sont remplis
-      if (!networkName || !networkVisibility || !networkFrequency || (networkVisibility === 'private' && !networkSecurity) || !paymentOption) {
-        e.preventDefault();
-        Swal.fire({
-          icon: 'error',
-          title: 'Champs manquants',
-          text: 'Veuillez remplir tous les champs obligatoires.',
-          confirmButtonText: 'OK',
-        });
-        return;
-      }
-
-      // Validation du prix si le réseau est payant
-      if (paymentOption === 'paid' && (!price || price < minPrice)) {
-        e.preventDefault();
-        Swal.fire({
-          icon: 'error',
-          title: 'Prix invalide',
-          text: `Le prix doit être supérieur ou égal à ${minPrice} FCFA.`,
-          confirmButtonText: 'OK',
-        });
-        return;
-      }
-
-      // Validation des adresses MAC si scannable
-      if ($('#scannable').is(':checked')) {
-        let macValid = true;
-        macFields.each(function () {
-          if (!$(this).val().match(/^[0-9A-Fa-f]{2}$/)) {
-            macValid = false;
-          }
-        });
-
-        if (!macValid) {
-          e.preventDefault();
-          Swal.fire({
-            icon: 'error',
-            title: 'Adresse MAC invalide',
-            text: 'Chaque segment de l’adresse MAC doit être un code hexadécimal à deux caractères.',
-            confirmButtonText: 'OK',
-          });
-          return;
-        }
-      }
-
-      // Validation du mot de passe
-      if (!password || password.length < minLength) {
-        e.preventDefault();
-        Swal.fire({
-          icon: 'error',
-          title: 'Mot de passe invalide',
-          text: `Le mot de passe doit contenir au moins ${minLength} caractères.`,
-          confirmButtonText: 'OK',
-        });
-      }
-    });
+  // Gestion de l'affichage conditionnel des champs
+  $('#network-payment-select').on('change', function () {
+    const paymentOption = $(this).val();
+    if (paymentOption === 'paid') {
+      $('#price-group').show();
+      $('#prix').attr('required', true);
+    } else {
+      $('#price-group').hide();
+      $('#prix').val('').removeAttr('required');
+    }
   });
+
+  $('#scannable').on('change', function () {
+    if ($(this).is(':checked')) {
+      $('#mac-address-group').show();
+      $('.mac').attr('required', true);
+    } else {
+      $('#mac-address-group').hide();
+      $('.mac').val('').removeAttr('required');
+    }
+  });
+
+  // Suppression de l'affichage conditionnel du champ de sécurité réseau
+  // Nous n'avons plus besoin de gérer le `#network-security-select`
+
+  // Validation lors de la soumission
+  $('#createNewNetwork').on('submit', function (e) {
+    const networkName = $('input[name="nomReseau"]').val();
+    const networkVisibility = $('#network-visibility-select').val();
+    const networkFrequency = $('#network-frequency-select').val();
+    const paymentOption = $('#network-payment-select').val();
+    const price = $('#prix').val();
+    const minPrice = 1000;
+    const macFields = $('.mac');
+    const password = $('input[name="newpasseword"]').val();
+    const minLength = 8;
+
+    // Vérifie que tous les champs obligatoires sont remplis
+    if (!networkName || !networkVisibility || !networkFrequency || !paymentOption) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'error',
+        title: 'Champs manquants',
+        text: 'Veuillez remplir tous les champs obligatoires.',
+        confirmButtonText: 'OK',
+      });
+      return;
+    }
+
+    // Validation du prix si le réseau est payant
+    if (paymentOption === 'paid' && (!price || price < minPrice)) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'error',
+        title: 'Prix invalide',
+        text: `Le prix doit être supérieur ou égal à ${minPrice} FCFA.`,
+        confirmButtonText: 'OK',
+      });
+      return;
+    }
+
+    // Validation des adresses MAC si scannable
+    if ($('#scannable').is(':checked')) {
+      let macValid = true;
+      macFields.each(function () {
+        if (!$(this).val().match(/^[0-9A-Fa-f]{2}$/)) {
+          macValid = false;
+        }
+      });
+
+      if (!macValid) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Adresse MAC invalide',
+          text: 'Chaque segment de l’adresse MAC doit être un code hexadécimal à deux caractères.',
+          confirmButtonText: 'OK',
+        });
+        return;
+      }
+    }
+
+    // Validation du mot de passe
+    if (!password || password.length < minLength) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'error',
+        title: 'Mot de passe invalide',
+        text: `Le mot de passe doit contenir au moins ${minLength} caractères.`,
+        confirmButtonText: 'OK',
+      });
+    }
+  });
+});
+
 </script>
 
 
@@ -295,14 +286,7 @@ $(document).ready(function () {
               <option value="5">5GHz</option>
             </select>
     
-            <select id="network-security-select" name="networkSecurity" style="display: none;">
-              <option value="" disabled selected>Sécurité</option>
-              <option value="WPA2-PSK-AES">WPA2-PSK-AES</option>
-              <option value="WPA2/WPA3-SAE">WPA2/WPA3-SAE</option>
-              <option value="WPA3">WPA3</option>
-              <option value="WPA/WPA2-PSK-AES">WPA/WPA2-PSK-AES</option>
-              <option value="None">Aucune</option>
-            </select>
+            
     
             <select id="network-payment-select" name="networkPayment">
               <option value="" disabled selected>Payement</option>

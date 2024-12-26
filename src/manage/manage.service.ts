@@ -202,39 +202,80 @@ while (i <= 5) {
 
               await page.waitForSelector(configMode);
               await page.click(configMode);
+              console.log("Config");
+              
+              await page.waitForSelector('#Btn_apply_MACFilterACLPolicy'); // Sélecteur CSS basé sur l'ID
 
-              const applyMode = "Btn_apply_MACFilterACLPolicy"
-              await page.waitForSelector(applyMode, { visible: true });
-              await page.click(applyMode)
-
-              await page.waitForSelector("#MACFilterRuleBar");
-              await page.click("#MACFilterRuleBar");
-
-              let index = 0;
+              // Cliquez sur le bouton
+              await page.click('#Btn_apply_MACFilterACLPolicy');
+              console.log("Apply");
+              
+              await page.evaluate(() => {
+                const div = document.querySelector('#MACFilterRule_container');
+                if (div && div instanceof HTMLElement && div.style.display === 'none') {
+                  div.style.display = 'block'; // Modifier display: none à display: block
+                }
+              });
+            
+              // Vérifier que la div est bien maintenant en display: block
+              const isVisible = await page.$eval('#MACFilterRule_container', el => {
+                const style = window.getComputedStyle(el);
+                return style.display === 'block'; // Retourne vrai si la div est en block
+              });
+            
+              console.log(isVisible ? 'La div est maintenant visible' : 'La div est toujours cachée');
+              
+              /*let index = 0;
               let count = 0;
-
               while (true) {
-                const selector = `#topLine_MACFilterRule\\:${index}`;
+                // Utiliser un sélecteur dynamique avec l'index
+                const selector = `#instName_MACFilterRule\\:${index}`;
+                
                 try {
-                  // Essayer de sélectionner le div avec l'ID actuel
+                  // Attendre que l'élément avec l'ID spécifié soit visible
                   await page.waitForSelector(selector, { timeout: 2000 });
-                  count++; // Incrémenter le compteur si le div est trouvé
-                  index++; // Passer à l'index suivant
+                  this.delay(20000)
+                  // Extraire le texte du span et son attribut title
+                  const spanText = await page.$eval(selector, el => el.textContent);
+                  const spanTitle = await page.$eval(selector, el => el.getAttribute('title'));
+            
+                  console.log(`Element trouvé à l'index ${index}: Texte - ${spanText}, Title - ${spanTitle}`);
+            
+                  // Incrémenter le compteur et passer à l'index suivant
+                  count++;
+                  index++;
                 } catch (error) {
-                  // Si le div avec cet ID n'est pas trouvé, arrêter la boucle
-                  console.log(`Aucun élément supplémentaire trouvé à l'index ${index}. Fin de la recherche.`);
+                  // Sortir de la boucle si l'élément n'existe plus
+                  console.log(`Aucun élément trouvé à l'index ${index}. Fin de la recherche.`);
                   break;
                 }
+              }*/
+            
+              // Afficher le nombre total d'éléments trouvés
+             // console.log(`Nombre total de spans trouvés avec l'ID sous la forme #instName_MACFilterRule:${index} : ${count}`);
+
+              // console.log(`Nombre total de div avec l'ID sous la forme #instName_MACFilterRule:${index} : ${count}`);
+
+              
+             // await page.waitForSelector("#addInstBar_MACFilterRule",{timeout:10000});
+             // await page.click("#addInstBar_MACFilterRule");
+             await page.evaluate(() => {
+              // Sélectionner les deux div par leurs IDs
+              const templateDiv = document.querySelector('#template_MACFilterRule') as HTMLElement;
+              const changeAreaDiv = document.querySelector('#changeArea_MACFilterRule') as HTMLElement;
+            
+              // Vérifier si les div existent et modifier leur style
+              if (templateDiv) {
+                templateDiv.style.display = 'block';
               }
-
-              console.log(`Nombre total de div avec l'ID sous la forme #topLine_MACFilterRule:${index} : ${count}`);
-
-              await page.waitForSelector("#addInstBar_MACFilterRule");
-              await page.click("#addInstBar_MACFilterRule");
-
-              const inputSelector = `#Name\\:${count}`;
+              if (changeAreaDiv) {
+                changeAreaDiv.style.display = 'block';
+              }
+            });
+            
+              const inputSelector = `#Name`;
               // Attendre que l'input soit visible
-              await page.waitForSelector(inputSelector);
+              await page.waitForSelector(inputSelector,{timeout:20000});
 
               // Cliquer pour sélectionner le champ
               await page.click(inputSelector);
@@ -242,9 +283,9 @@ while (i <= 5) {
                 input.value = ''; // Efface l'ancien contenu
                 input.value = text; // Définit le nouveau texte
               }, 'FirstApp');
-              console.log(count);
+              
 
-              const selectSelector = `#Interface\\:${count}`;
+              const selectSelector = `#Interface`;
               await page.waitForSelector(selectSelector);
               const optionIndex = i + 1; // `nth-child` commence à 1 en CSS, donc on utilise `i + 1`
               const optionValue = await page.$eval(
@@ -252,10 +293,11 @@ while (i <= 5) {
                 (option: HTMLOptionElement) => option.value
               );
               await page.select(selectSelector, optionValue);
-
+              
+              
               for (let index = 0; index < 6; index++) {
                 // Construire le sélecteur dynamique pour chaque input
-                const inputSelector = `#sub_MACAddress${index}\\:14`;
+                const inputSelector = `#sub_MACAddress${index}`;
 
                 try {
                   // Vérifier si l'adresse MAC correspondante existe dans InfoNewWifi
@@ -281,19 +323,22 @@ while (i <= 5) {
                   console.error(`Erreur lors du remplissage de l'input ${inputSelector}:`, error);
                 }
               }
-
-              const applyButtonSelector = `#Btn_apply_MACFilterRule\\:${count}`;
+            
+              const applyButtonSelector = `#Btn_apply_MACFilterRule`;
               await page.waitForSelector(applyButtonSelector, { visible: true });
               await page.click(applyButtonSelector);
 
-              await page.waitForSelector('#wlanBasic');
+              await page.reload({ waitUntil: 'networkidle0' }); // Attend que le réseau soit inactif après le rechargement
+
+              await page.waitForSelector('#wlanConfig'); // Attendre que l'élément soit chargé
+              await page.click('#wlanConfig'); // Cliquer sur l'élément
               console.log('Accès aux paramètres basic du WLAN pour activer le reseau.');
-              await page.click('#wlanBasic')
+              
 
               await page.waitForSelector('#WLANSSIDConfBar');
               console.log('Tous les réseaux...');
               await page.click('#WLANSSIDConfBar');
-
+              
               await page.waitForSelector(instNameSelector);
               await page.click(instNameSelector);
 
@@ -313,8 +358,9 @@ while (i <= 5) {
               await page.click(`#Btn_apply_WLANSSIDConf\\:${i}`);
               const selector = '.succHint';
               await page.waitForSelector(selector);
-              console.log("Les modifications ont été appliquées pour le réseau.");
+              console.log("Les modifications ont été appliquées pour le réseau.");/**/
               break;
+
             } else {
               await page.waitForSelector(instNameSelector);
               await page.click(instNameSelector);
@@ -329,9 +375,10 @@ while (i <= 5) {
 
               // Activer le réseau
               await page.$eval(enableSelector, (el: HTMLInputElement) => { if (!el.checked) el.click(); });
-
               // Appliquer les modifications
+              page.waitForSelector(`#Btn_apply_WLANSSIDConf\\:${i}`)
               await page.click(`#Btn_apply_WLANSSIDConf\\:${i}`);
+              page.waitForSelector(`#Btn_apply_WLANSSIDConf\\:${i}`)
               await page.click(`#Btn_apply_WLANSSIDConf\\:${i}`);
               const selector = '.succHint';
               await page.waitForSelector(selector);
@@ -351,7 +398,12 @@ while (i <= 5) {
       console.error("Erreur lors de la configuration du WiFi :", error);
     } finally {
       await browser.close();
-      this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,InfoNewWifi.prix)
+      if (InfoNewWifi.networkPayment =='free') {
+        this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,0,false)
+      }else{
+        this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,InfoNewWifi.prix,true)
+      }
+      
     }
 
     return true;
@@ -378,17 +430,20 @@ while (i <= 5) {
     
   }
 
-  async CreateWifiUpdate(id:number,nomReseau:string,password:string,prix:number){
+  async CreateWifiUpdate(id:number,nomReseau:string,password:string,prix:number,payant:boolean){
     try {
 
+      
       const nouveauReseau = this.ReseauInfoRepository.create({
         modem_id: id,
         essid: nomReseau,
         password: password,
-        prix_unitaire:prix
+        prix_unitaire:prix,
+        payant:payant
       });
 
     await this.ReseauInfoRepository.save(nouveauReseau);
+  
 
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du réseau :', error);
@@ -549,40 +604,54 @@ while (i <= 5) {
   async generateQrCodes(id: number) {
     // Récupérer les réseaux pour un modem_id spécifique
     const reseaux = await this.ReseauInfoRepository.find({ where: { modem_id: id } });
-
+  
     // Vérifier si des réseaux ont été trouvés
     if (reseaux.length === 0) {
       console.log('Aucun réseau trouvé pour ce modem_id');
-      return;
+      return [];
     }
-
-    // Pour chaque réseau, générer un QR code en utilisant l'API de goqr.me
+  
+    const generatedQrCodes = [];
+  
     for (const reseau of reseaux) {
       try {
-        // Créer un QR code pour chaque réseau (par exemple, pour le ESSID et le mot de passe)
+        // Vérifier si le QR code existe déjà
+        if (reseau.qrCode) {
+          console.log(`QR code déjà existant pour le réseau ${reseau.essid}`);
+          continue;
+        }
+  
+        // Créer un QR code
         const qrData = `WIFI:S:${reseau.essid};T:${reseau.encryption_type || 'WPA'};P:${reseau.password};;`;
-
-        // Requête vers l'API goqr.me pour générer le QR code
+  
+        // Requête vers l'API
         const response = await axios.get('https://api.qrserver.com/v1/create-qr-code/', {
           params: {
-            data: qrData,  // Les données à encoder dans le QR code
-            size: '200x200'  // Taille du QR code (ajustable)
+            data: qrData,
+            size: '200x200',
           },
-          responseType: 'arraybuffer'  // Pour récupérer l'image en binaire
+          responseType: 'arraybuffer',
         });
-
-        // Convertir la réponse en base64 pour l'enregistrer dans la base de données
+  
+        // Convertir la réponse en base64
         const qrCode = `data:image/png;base64,${Buffer.from(response.data).toString('base64')}`;
-
-        // Sauvegarder le QR code dans la base de données
+  
+        // Sauvegarder dans la base de données
         reseau.qrCode = qrCode;
         await this.ReseauInfoRepository.save(reseau);
-
+  
         console.log(`QR code généré pour le réseau ${reseau.essid}`);
+        generatedQrCodes.push(reseau);
       } catch (error) {
-        console.error('Erreur lors de la génération du QR code:', error);
+        console.error(`Erreur lors de la génération du QR code pour le réseau ${reseau.essid}:`, error);
       }
     }
+  
+    return generatedQrCodes;
+  }
+  
+  async getQr(id:number){
+    return  await this.ReseauInfoRepository.find({ where: { modem_id: id } });
   }
 
  async AllData(id:number)

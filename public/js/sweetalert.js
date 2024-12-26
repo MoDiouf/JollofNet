@@ -54,17 +54,17 @@ function refreshModem() {
       if (result.isConfirmed) {
         // Envoi de la requête POST pour générer les QR codes
         fetch('/app/manage/generate', { 
-          method: 'POST' 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            Swal.fire('Succès!', 'Les QR codes ont été générés avec succès.', 'success').then(() => {
-              // Recharger la page après le succès
+            Swal.fire('Succès!', data.message, 'success').then(() => {
               location.reload();
             });
           } else {
-            Swal.fire('Erreur!', 'Une erreur est survenue lors de la génération des QR codes.', 'error');
+            Swal.fire('Erreur!', data.message, 'error');
           }
         })
         .catch(error => {
@@ -74,4 +74,5 @@ function refreshModem() {
       }
     });
   }
+  
   

@@ -15,14 +15,14 @@ export class ManageController {
   @Get()
   async getManage(@Req() req:Request, @Res() res:Response) {
     const user = req.session.user
-    const data = this.sharedService.getModemData();
+    const dataShare = this.sharedService.getModemData();
     const name = req.session.user.name;
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toUpperCase();
     
     if (!user || !user.session) {
       return res.redirect('/signuplogin');  // Redirige vers la page de connexion si la session est invalide
     }
-    if (!data) {
+    if (!dataShare) {
       console.log('Pas de données disponibles');
       return res.render('user/dashboard',{ 
         message: 'success', 
@@ -34,8 +34,11 @@ export class ManageController {
       });
     }
     const dataFromDB = await this.manageService.AllData(user.id)
-console.log("GetManage",data);
-
+//console.log("GetManageDB",dataFromDB);
+//console.log("GetManageShare",dataShare);
+    const data = await this.addQrCodesToData(dataShare, dataFromDB); // Ajoute les qrCodes
+  
+  console.log("Enriched Data:", data);
     
     return res.render('user/dashboard', { 
      title: 'Réseau',
@@ -47,6 +50,21 @@ console.log("GetManage",data);
      });
   }
 
+  addQrCodesToData(data: any[], dataFromDB: any[]): any[] {
+    return data.map(item => {
+      const matchingDbEntry = dataFromDB.find(dbEntry => dbEntry.essid === item.essid);
+  
+      if (matchingDbEntry) {
+        return {
+          ...item, // Conserve les propriétés existantes de l'élément.
+          qrCode: matchingDbEntry.qrCode, // Ajoute ou met à jour le qrCode.
+        };
+      }
+  
+      // Retourne l'élément inchangé si aucune correspondance n'est trouvée.
+      return item;
+    });
+  }
   
   @Post()
   async changePassword(
@@ -212,11 +230,25 @@ async refreshModem(@Req() req: Request, @Res() res: Response) {
 }
 
 @Post("generate")
-async generateQrCode(@Req() req: Request){
-  const userId = req.session.user.id
+async generateQrCode(@Req() req: Request, @Res() res: Response) {
+  const userId = req.session.user.id;
 
-  const generate = await this.manageService.generateQrCodes(userId)
+  // Générer les QR codes
+  try {
+    const generate = await this.manageService.generateQrCodes(userId);
+
+    // Vérifier si la génération a réussi
+    if (!generate || generate.length === 0) {
+      return res.status(400).json({ success: false, message: 'Aucun réseau trouvé pour générer des QR codes.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'QR codes générés avec succès.' });
+  } catch (error) {
+    console.error('Erreur lors de la génération des QR codes:', error);
+    return res.status(500).json({ success: false, message: 'Erreur lors de la génération des QR codes.' });
+  }
 }
+
   @Post("DeleteModem")
   async removeModem(@Req() req:Request,@Res() res: Response){
     const userId = req.session.user.id
