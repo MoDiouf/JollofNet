@@ -25,6 +25,8 @@ import { UserConnected } from './statistique/entities/userConnected.entity';
 import { StatistiqueModule } from './statistique/statistique.module';
 import { StatistiqueController } from './statistique/statistique.controller';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ClientConnectController } from './client-connect/client-connect.controller';
+import { ClientConnectModule } from './client-connect/client-connect.module';
 
 
 
@@ -48,8 +50,9 @@ import { ScheduleModule } from '@nestjs/schedule';
     SharedModule,
     AuthModule,
     StatistiqueModule,
+    ClientConnectModule,
   ],
-  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController],
+  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController, ClientConnectController],
   providers: [AppService, AddNetworkService, SharedService, ManageService, ProfilService],
 })
 export class AppModule implements NestModule {
