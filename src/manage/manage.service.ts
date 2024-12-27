@@ -389,7 +389,7 @@ while (i <= 5) {
                 document.querySelector(`#Btn_apply_WLANSSIDConf\\:${i}`)?.scrollIntoView();
               });
               
-              await page.evaluate(() => {
+             await page.evaluate(() => {
                 const button = document.querySelector(`#Btn_apply_WLANSSIDConf\\:${i}`);
                 if (button) {
                   button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
@@ -413,9 +413,9 @@ while (i <= 5) {
     } catch (error) {
       console.error("Erreur lors de la configuration du WiFi :", error);
     } finally {
-      //await browser.close();
+      await browser.close();
       if (InfoNewWifi.networkPayment =='free') {
-        this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,0,false)
+        this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,0,false,)
       }else{
         this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,InfoNewWifi.prix,true)
       }
@@ -449,13 +449,14 @@ while (i <= 5) {
   async CreateWifiUpdate(id:number,nomReseau:string,password:string,prix:number,payant:boolean){
     try {
 
-      
+      const security= "WPA2/WPA3-SAE"
       const nouveauReseau = this.ReseauInfoRepository.create({
         modem_id: id,
         essid: nomReseau,
         password: password,
         prix_unitaire:prix,
-        payant:payant
+        payant:payant,
+        encryption_type:security
       });
 
     await this.ReseauInfoRepository.save(nouveauReseau);
