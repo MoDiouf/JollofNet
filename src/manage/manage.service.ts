@@ -382,6 +382,22 @@ while (i <= 5) {
               await page.click(`#Btn_apply_WLANSSIDConf\\:${i}`);
               const selector = '.succHint';
               await page.waitForSelector(selector);
+
+
+              //Autres Clicks
+              await page.evaluate(() => {
+                document.querySelector(`#Btn_apply_WLANSSIDConf\\:${i}`)?.scrollIntoView();
+              });
+              
+              await page.evaluate(() => {
+                const button = document.querySelector(`#Btn_apply_WLANSSIDConf\\:${i}`);
+                if (button) {
+                  button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                }
+              });
+              
+              
+
               console.log("Les modifications ont été appliquées pour le réseau.");
               break;
             }
@@ -397,7 +413,7 @@ while (i <= 5) {
     } catch (error) {
       console.error("Erreur lors de la configuration du WiFi :", error);
     } finally {
-      await browser.close();
+      //await browser.close();
       if (InfoNewWifi.networkPayment =='free') {
         this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,0,false)
       }else{
