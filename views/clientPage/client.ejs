@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/client.css" />
+    <title>Connexion</title>
+</head>
+<body>
+
+  <div class="center">
+    <h1>Bienvenue</h1>
+    <form action="/client-connect" method="POST">
+      <div class="inputbox">
+        <input type="text" required="required" name="nom">
+        <span>Nom</span>
+      </div>
+    
+      <!-- Champs cachés pour transmettre les données du contrôleur -->
+      <input type="hidden" name="modem_id" value="<%= modem_id %>">
+      <input type="hidden" name="essid" value="<%= essid %>">
+    
+      <div class="" style="padding-bottom: 20px;">
+        <label>Adresse mac</label>
+        <div style="display: flex; justify-content: center;">
+          <input type="text" maxlength="2" pattern="[0-9A-Fa-f]{2}" name="mac1" id="mac1" required>
+          <span>:</span>
+          <input type="text" maxlength="2" pattern="[0-9A-Fa-f]{2}" name="mac2" id="mac2" required>
+          <span>:</span>
+          <input type="text" maxlength="2" pattern="[0-9A-Fa-f]{2}" name="mac3" id="mac3" required>
+          <span>:</span>
+          <input type="text" maxlength="2" pattern="[0-9A-Fa-f]{2}" name="mac4" id="mac4" required>
+          <span>:</span>
+          <input type="text" maxlength="2" pattern="[0-9A-Fa-f]{2}" name="mac5" id="mac5" required>
+          <span>:</span>
+          <input type="text" maxlength="2" pattern="[0-9A-Fa-f]{2}" name="mac6" id="mac6" required>
+        </div>
+      </div>
+    
+      <!-- Bouton pour envoyer le formulaire -->
+      <div class="inputbox">
+        <input type="submit" value="Submit">
+      </div>
+    </form>
+    
+  </div>
+  <script>
+    // Lorsque le formulaire est soumis, concaténer les champs de l'adresse MAC
+    document.querySelector("form").addEventListener("submit", function(event) {
+      const macParts = [
+        document.getElementById("mac1").value,
+        document.getElementById("mac2").value,
+        document.getElementById("mac3").value,
+        document.getElementById("mac4").value,
+        document.getElementById("mac5").value,
+        document.getElementById("mac6").value,
+      ];
+  
+      // Vérifie si tous les champs sont remplis avant de soumettre
+      if (macParts.every(part => part.length === 2)) {
+        // Si l'adresse MAC est valide, concaténer les parties et les mettre dans le champ caché
+        document.getElementById("mac_address").value = macParts.join(':');
+      } else {
+        alert("Adresse MAC invalide.");
+        event.preventDefault(); // Empêche l'envoi du formulaire si l'adresse MAC est invalide
+      }
+    });
+  </script>
+</body>
+</html>

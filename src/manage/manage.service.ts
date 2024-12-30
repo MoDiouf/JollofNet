@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { AddNetworkService } from 'src/add-network/add-network.service';
 import { ModemInfo } from 'src/add-network/entities/modemInfo.entity';
 import axios from 'axios';
-
+import { v4 as uuidv4 } from 'uuid';
 
 
 @Injectable()
@@ -413,11 +413,11 @@ while (i <= 5) {
     } catch (error) {
       console.error("Erreur lors de la configuration du WiFi :", error);
     } finally {
-      //await browser.close();
+      await browser.close();
       if (InfoNewWifi.networkPayment =='free') {
-        this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,0,false)
+        this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,0,false,InfoNewWifi.scannable?true:false)
       }else{
-        this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,InfoNewWifi.prix,true)
+        this.CreateWifiUpdate(idUser,InfoNewWifi.nomReseau,InfoNewWifi.newpasseword,InfoNewWifi.prix,true,InfoNewWifi.scannable?true:false)
       }
       
     }
@@ -446,7 +446,7 @@ while (i <= 5) {
     
   }
 
-  async CreateWifiUpdate(id:number,nomReseau:string,password:string,prix:number,payant:boolean){
+  async CreateWifiUpdate(id:number,nomReseau:string,password:string,prix:number,payant:boolean,scannable:boolean){
     try {
 
       
@@ -455,7 +455,8 @@ while (i <= 5) {
         essid: nomReseau,
         password: password,
         prix_unitaire:prix,
-        payant:payant
+        payant:payant,
+        scan:scannable
       });
 
     await this.ReseauInfoRepository.save(nouveauReseau);
@@ -618,10 +619,8 @@ while (i <= 5) {
 
   }
   async generateQrCodes(id: number) {
-    // Récupérer les réseaux pour un modem_id spécifique
     const reseaux = await this.ReseauInfoRepository.find({ where: { modem_id: id } });
   
-    // Vérifier si des réseaux ont été trouvés
     if (reseaux.length === 0) {
       console.log('Aucun réseau trouvé pour ce modem_id');
       return [];
@@ -631,33 +630,61 @@ while (i <= 5) {
   
     for (const reseau of reseaux) {
       try {
-        // Vérifier si le QR code existe déjà
-        if (reseau.qrCode) {
-          console.log(`QR code déjà existant pour le réseau ${reseau.essid}`);
-          continue;
+        // Si le réseau doit être scannable, générer un UUID si inexistant
+        if (reseau.scan) {
+          // Générer un UUID unique si inexistant
+          if (!reseau.link) {
+            reseau.link = uuidv4();
+            await this.ReseauInfoRepository.save(reseau); // Sauvegarder le nouvel UUID
+          }
+  
+          // Créer l'URL unique pour ce réseau (avec redirection vers client-connect)
+          const uniqueUrl = `http://192.168.1.10:3000/client-connect/${reseau.link}`;
+  
+          // Créer le contenu du QR code
+          const qrData = uniqueUrl;
+  
+          // Générer le QR code via l'API
+          const response = await axios.get('https://api.qrserver.com/v1/create-qr-code/', {
+            params: {
+              data: qrData,
+              size: '200x200',
+            },
+            responseType: 'arraybuffer',
+          });
+  
+          // Convertir en base64
+          const qrCode = `data:image/png;base64,${Buffer.from(response.data).toString('base64')}`;
+  
+          // Sauvegarder dans la base de données
+          reseau.qrCode = qrCode;
+          await this.ReseauInfoRepository.save(reseau);
+  
+          console.log(`QR code généré pour le réseau ${reseau.essid}`);
+          generatedQrCodes.push(reseau);
+        } else {
+          // Si 'scan' est false, ne pas générer un QR code avec redirection
+          const qrData = `WIFI:S:${reseau.essid};T:${reseau.encryption_type || 'WPA'};P:${reseau.password};;`;
+  
+          // Générer le QR code sans redirection
+          const response = await axios.get('https://api.qrserver.com/v1/create-qr-code/', {
+            params: {
+              data: qrData,
+              size: '200x200',
+            },
+            responseType: 'arraybuffer',
+          });
+  
+          // Convertir en base64
+          const qrCode = `data:image/png;base64,${Buffer.from(response.data).toString('base64')}`;
+  
+          // Sauvegarder dans la base de données
+          reseau.qrCode = qrCode;
+          await this.ReseauInfoRepository.save(reseau);
+  
+          console.log(`QR code généré pour le réseau ${reseau.essid}`);
+          generatedQrCodes.push(reseau);
         }
-  
-        // Créer un QR code
-        const qrData = `WIFI:S:${reseau.essid};T:${reseau.encryption_type || 'WPA'};P:${reseau.password};;`;
-  
-        // Requête vers l'API
-        const response = await axios.get('https://api.qrserver.com/v1/create-qr-code/', {
-          params: {
-            data: qrData,
-            size: '200x200',
-          },
-          responseType: 'arraybuffer',
-        });
-  
-        // Convertir la réponse en base64
-        const qrCode = `data:image/png;base64,${Buffer.from(response.data).toString('base64')}`;
-  
-        // Sauvegarder dans la base de données
-        reseau.qrCode = qrCode;
-        await this.ReseauInfoRepository.save(reseau);
-  
-        console.log(`QR code généré pour le réseau ${reseau.essid}`);
-        generatedQrCodes.push(reseau);
       } catch (error) {
         console.error(`Erreur lors de la génération du QR code pour le réseau ${reseau.essid}:`, error);
       }
@@ -665,6 +692,7 @@ while (i <= 5) {
   
     return generatedQrCodes;
   }
+  
   
   async getQr(id:number){
     return  await this.ReseauInfoRepository.find({ where: { modem_id: id } });

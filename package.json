@@ -48,7 +48,8 @@
     "rxjs": "^7.8.1",
     "sweetalert2": "^11.14.5",
     "toastify-js": "^1.12.0",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

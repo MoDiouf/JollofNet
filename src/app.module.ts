@@ -27,11 +27,18 @@ import { StatistiqueController } from './statistique/statistique.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ClientConnectController } from './client-connect/client-connect.controller';
 import { ClientConnectModule } from './client-connect/client-connect.module';
+import { PaytechService } from './paytech/paytech.service';
+import { PaytechController } from './paytech/paytech.controller';
+import { ConfigModule } from '@nestjs/config';
 
 
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // Rendre le module accessible partout dans l'application
+      envFilePath: '.env', // Indiquez le chemin vers le fichier .env
+    }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -52,8 +59,8 @@ import { ClientConnectModule } from './client-connect/client-connect.module';
     StatistiqueModule,
     ClientConnectModule,
   ],
-  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController, ClientConnectController],
-  providers: [AppService, AddNetworkService, SharedService, ManageService, ProfilService],
+  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController, ClientConnectController, PaytechController],
+  providers: [AppService, AddNetworkService, SharedService, ManageService, ProfilService, PaytechService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

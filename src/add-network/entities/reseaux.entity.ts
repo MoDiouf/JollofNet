@@ -24,4 +24,10 @@ export class ReseauInfo {
 
     @Column({ type: 'boolean', default: false })
     payant: boolean;
+
+    @Column({ nullable: true })
+    link: string;
+
+    @Column({ type: 'boolean', default: false })
+    scan: boolean;
   }
