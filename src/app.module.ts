@@ -27,9 +27,10 @@ import { StatistiqueController } from './statistique/statistique.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ClientConnectController } from './client-connect/client-connect.controller';
 import { ClientConnectModule } from './client-connect/client-connect.module';
-import { PaytechService } from './paytech/paytech.service';
-import { PaytechController } from './paytech/paytech.controller';
 import { ConfigModule } from '@nestjs/config';
+import { TransfertService } from './tranfert/tranfert.service';
+import { TransferController } from './tranfert/tranfert.controller';
+import { TransferModule } from './tranfert/tranfert.module';
 
 
 
@@ -58,9 +59,10 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     StatistiqueModule,
     ClientConnectModule,
+    TransferModule,
   ],
-  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController, ClientConnectController, PaytechController],
-  providers: [AppService, AddNetworkService, SharedService, ManageService, ProfilService, PaytechService],
+  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController, ClientConnectController, TransferController, ],
+  providers: [AppService, AddNetworkService, SharedService, ManageService, ProfilService, TransfertService, ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
