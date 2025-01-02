@@ -1,74 +1,34 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { CreateTransferDto } from './DTO/create-transfert.dto';
+import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
 import { TransfertService } from './tranfert.service';
 
-@Controller('transfer')
+
+@Controller('cinetpay')
 export class TransferController {
-  constructor(private readonly transferService: TransfertService) {}
+  constructor(private readonly paymentService: TransfertService) {}
 
-  @Post()
-  async createTransfer(@Body() transferData: CreateTransferDto) {
-    const { totalPayment, apiKey, password, myOrangeMoneyAccount, otherOrangeMoneyAccount, lang } = transferData;
-    console.log(transferData);
+  @Post('initiate-payment')
+  async initiatePayment(@Body() body: { amount: number; transaction_id: string }): Promise<any> {
+    const { amount, transaction_id } = body;
 
-    // Authentification et récupération du token
-    let token;
-    try {
-      token = await this.transferService.authenticate(apiKey, password, lang);
-    } catch (error) {
-      return {
-        success: false,
-        message: `Erreur d'authentification: ${error.message}`,
-      };
+    // Vérifier si le montant est valide
+    if (amount < 5) {
+      throw new HttpException(
+        'Le montant minmum est de 5.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    // Vérification du solde
-    let balance;
     try {
-      balance = await this.transferService.checkBalance(token, lang);
-    } catch (error) {
+      const result = await this.paymentService.initiatePayment(amount, transaction_id);
       return {
-        success: false,
-        message: `Erreur lors de la vérification du solde: ${error.message}`,
-      };
-    }
-
-    if (balance < totalPayment) {
-      return {
-        success: false,
-        message: 'Solde insuffisant',
-      };
-    }
-
-    // Préparer les données de transfert pour les deux comptes
-    const transferDataArray = [
-      {
-        prefix: '225', // Code pays pour la Côte d'Ivoire (ajustez si nécessaire)
-        phone: myOrangeMoneyAccount,
-        amount: totalPayment,
-        notify_url: 'http://yourdomain.com/transfer/notify', // Remplacez par votre URL de notification
-      },
-      {
-        prefix: '225', // Code pays pour la Côte d'Ivoire (ajustez si nécessaire)
-        phone: otherOrangeMoneyAccount,
-        amount: totalPayment,
-        notify_url: 'http://yourdomain.com/transfer/notify', // Remplacez par votre URL de notification
-      }
-    ];
-
-    // Effectuer le transfert
-    try {
-      const transferResponse = await this.transferService.sendMoney(token, transferDataArray, lang);
-      return {
-        success: true,
-        message: 'Transfert effectué avec succès',
-        data: transferResponse,
+        message: 'Paiement initié avec succès.',
+        data: result,
       };
     } catch (error) {
-      return {
-        success: false,
-        message: `Erreur lors du transfert: ${error.message}`,
-      };
+      throw new HttpException(
+        `Erreur lors de l'initialisation du paiement: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

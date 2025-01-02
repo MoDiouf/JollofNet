@@ -34,6 +34,7 @@ import { TransferModule } from './tranfert/tranfert.module';
 
 
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -60,9 +61,10 @@ import { TransferModule } from './tranfert/tranfert.module';
     StatistiqueModule,
     ClientConnectModule,
     TransferModule,
+    
   ],
-  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController, ClientConnectController, TransferController, ],
-  providers: [AppService, AddNetworkService, SharedService, ManageService, ProfilService, TransfertService, ],
+  controllers: [AppController, AddNetworkController, ProfilController, ManageController, AuthGoogleController, ClientConnectController,  ],
+  providers: [AppService, AddNetworkService, SharedService, ManageService, ProfilService,  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

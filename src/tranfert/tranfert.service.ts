@@ -1,76 +1,76 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios'; 
-import { AxiosResponse } from 'axios';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import axios from 'axios';
 
 @Injectable()
 export class TransfertService {
-  constructor(private readonly httpService: HttpService) {}
+  private readonly apiUrl = 'https://sandbox.cinetpay.com/v1';
+  private readonly apiKey = '197315885967740c26279e35.07185461'; // Remplacez par votre clé API
+  private readonly apiPassword = 'Sword@rtonline'; // Remplacez par votre mot de passe API
 
-  // Méthode d'authentification pour obtenir un token
-  async authenticate(apiKey: string, password: string, lang: string): Promise<string> {
-    const url = 'https://client.cinetpay.com/v1/auth/login';
-    const params = new URLSearchParams();
-    params.append('apikey', apiKey);
-    params.append('password', password);
-    params.append('lang', lang);
-
+  // Récupération du token
+  async getToken(): Promise<string> {
     try {
-      const response: AxiosResponse = await this.httpService.post(url, params.toString(), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      }).toPromise();
+      const response = await axios.post(
+        `${this.apiUrl}/auth/login`,
+        null,
+        {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          params: { apikey: this.apiKey, password: this.apiPassword },
+        },
+      );
 
       if (response.data.code === 0) {
         return response.data.data.token;
       } else {
-        throw new InternalServerErrorException(`Erreur d'authentification: ${response.data.message}`);
+        throw new HttpException(response.data.message, HttpStatus.BAD_REQUEST);
       }
     } catch (error) {
-      throw new InternalServerErrorException(`Erreur lors de l'authentification: ${error.message}`);
+      throw new HttpException(
+        `Erreur lors de la récupération du token: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  // Méthode pour vérifier le solde du compte
-  async checkBalance(token: string, lang: string): Promise<number> {
-    const url = 'https://client.cinetpay.com/v1/transfer/check/balance';
-    const params = {
-      token: token,
-      lang: lang,
+  // Initialiser un paiement
+  async initiatePayment(amount: number, transaction_id: string): Promise<any> {
+    const token = await this.getToken();
+
+    const paymentData = {
+      apikey: this.apiKey,
+      site_id: '105884712', // Remplacez par votre site ID
+      transaction_id,
+      amount,
+      currency: 'XOF', // Devise utilisée
+      description: 'Paiement via CinetPay',
+      return_url: 'http://votre-site.com/success', // URL de retour en cas de succès
+      notify_url: 'http://votre-site.com/notify', // URL de notification
+      customer_name: 'John Doe', // Optionnel
+      customer_email: 'johndoe@example.com', // Optionnel
     };
 
     try {
-      const response: AxiosResponse = await this.httpService.get(url, { params }).toPromise();
-
-      if (response.data.code === 0) {
-        return response.data.data.available;
-      } else {
-        throw new InternalServerErrorException(`Erreur lors de la vérification du solde: ${response.data.message}`);
-      }
-    } catch (error) {
-      throw new InternalServerErrorException(`Erreur lors de la vérification du solde: ${error.message}`);
-    }
-  }
-
-  // Méthode pour envoyer l'argent entre les deux contacts
-  async sendMoney(token: string, transferData: any[], lang: string): Promise<any> {
-    const url = 'https://client.cinetpay.com/v1/transfer/money/send/contact';
-    const params = {
-      token: token,
-      lang: lang,
-    };
-
-    try {
-      const response: AxiosResponse = await this.httpService.post(url, { data: transferData }, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        params: params,
-      }).toPromise();
+      const response = await axios.post(
+        `${this.apiUrl}/payment`,
+        paymentData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
 
       if (response.data.code === 0) {
         return response.data.data;
       } else {
-        throw new InternalServerErrorException(`Erreur lors de l'envoi de l'argent: ${response.data.message}`);
+        throw new HttpException(response.data.message, HttpStatus.BAD_REQUEST);
       }
     } catch (error) {
-      throw new InternalServerErrorException(`Erreur lors de l'envoi de l'argent: ${error.message}`);
+      throw new HttpException(
+        `Erreur lors de l'initialisation du paiement: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
