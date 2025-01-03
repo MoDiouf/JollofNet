@@ -1,7 +1,14 @@
-import { Module } from '@nestjs/common';
-import { ClientConnectService } from './client-connect.service';
+import { Module,  } from '@nestjs/common';
+import { ClientConnectController } from './client-connect.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ReseauInfo } from 'src/add-network/entities/reseaux.entity';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  providers: [ClientConnectService]
+  imports: [
+    HttpModule,  // Ajoutez HttpModule ici
+    TypeOrmModule.forFeature([ReseauInfo])
+  ],
+  controllers: [ClientConnectController],
 })
 export class ClientConnectModule {}

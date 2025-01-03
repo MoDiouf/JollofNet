@@ -1,45 +1,19 @@
-import { Body, Controller, Get, Param, Post, Query, Render, Res } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { ReseauInfo } from 'src/add-network/entities/reseaux.entity';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ClientConnectService } from './client-connect.service';
+import { ReseauInfo } from 'src/add-network/entities/reseaux.entity';
 
 @Controller('client-connect')
 export class ClientConnectController {
   constructor(
+    private readonly httpService: HttpService,
     @InjectRepository(ReseauInfo)
-    private ReseauInfoRepository: Repository<ReseauInfo>,
-    //private readonly clientService: ClientConnectService
+    private ReseauInfoRepository: Repository<ReseauInfo>
   ) {}
 
-  @Get(':uuid')
-  async redirectToNetwork(@Param('uuid') uuid: string, @Query() query: any,@Res() res:Response) {
-    // Recherche du réseau correspondant à l'UUID
-    console.log("link",uuid);
-    
-    const reseau = await this.ReseauInfoRepository.findOne({
-      where: { link: uuid },
-    });
-
-    if (!reseau) {
-      throw new Error('Réseau non trouvé');
-    }
-
-    // Extraire les informations du réseau
-    const {  modem_id, essid } = reseau;
-    console.log("id_User",modem_id);
-    console.log("Nom reseau",essid);
-    
-    // Passer ces informations à la vue EJS
-    return res.render("clientPage/client",{
-      
-      modem_id,
-      essid,
-      
-    });
-  }
-  @Post()
   @Post()
   async handleClientForm(@Body() body: any, @Res() res: Response) {
     const { modem_id, essid, mac1, mac2, mac3, mac4, mac5, mac6, nom } = body;
@@ -53,11 +27,49 @@ export class ClientConnectController {
     console.log("ESSID:", essid);
     console.log("Adresse MAC:", macAddress);
 
-    // Traitement de la logique métier (par exemple, stockage dans la base de données)
-    // ...
+    // Données de la facture à envoyer
+    const invoiceData = {
+      invoice: {
+        total_amount: 1000,
+        description: "Chaussure VANS dernier modèle",
+      },
+      store: {
+        name: "Magasin Chez Sandra",
+        tagline: "L'élégance n'a pas de prix",
+        phone_number: "336530583",
+        postal_address: "Dakar Plateau - Etablissement kheweul",
+        website_url: "http://www.chez-sandra.sn",
+        logo_url: "http://www.chez-sandra.sn/logo.png",
+      },
+    };
 
-    // Réponse à l'utilisateur
-    return res.status(200).send('Données reçues avec succès');
+    try {
+      // Effectuer un appel POST vers le service PayDunya
+      const paymentUrl = await this.createInvoice(invoiceData);
+
+      // Réponse avec l'URL de paiement
+      return res.redirect(paymentUrl);
+    } catch (error) {
+      console.error('Erreur lors de la création de la facture:', error);
+      return res.status(500).send('Erreur lors de la création de la facture');
+    }
   }
 
+  // Méthode pour envoyer la requête POST à PayDunya
+  private async createInvoice(invoiceData: any): Promise<string> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post('http://localhost:3000/paydunya/create-invoice', invoiceData)
+      );
+      
+      if (response.data.response_code === '00') {
+        return response.data.response_text;  // URL de redirection
+      } else {
+        throw new Error('Erreur de création de la facture PayDunya');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'appel à PayDunya:', error);
+      throw new Error('Erreur lors de la communication avec PayDunya');
+    }
+  }
 }

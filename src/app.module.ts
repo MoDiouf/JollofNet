@@ -32,11 +32,13 @@ import { ConfigModule } from '@nestjs/config';
 import { PayDunyaController } from './paydunya/paydunya.controller';
 import { PayDunyaService } from './paydunya/paydunya.service';
 import { PaydunyaModule } from './paydunya/paydunya.module';
+import { HttpModule } from '@nestjs/axios';
 
 
 
 @Module({
   imports: [
+    HttpModule,
     ConfigModule.forRoot({
       isGlobal: true, // Rendre le module accessible partout dans l'application
       envFilePath: '.env', // Indiquez le chemin vers le fichier .env

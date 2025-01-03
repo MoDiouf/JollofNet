@@ -1,37 +1,17 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, Logger, Headers } from '@nestjs/common';
 import { PayDunyaService } from './paydunya.service';
-import * as crypto from 'crypto';
-// Importez le DTO
+import { CreateInvoiceDto } from './DTO/create-payment.dto';
 
 @Controller('paydunya')
 export class PayDunyaController {
+  private readonly logger = new Logger(PayDunyaController.name);
+
   constructor(private readonly payDunyaService: PayDunyaService) {}
 
+  // Route pour initier un paiement
   @Post('create-invoice')
-  async createInvoice(@Body() createInvoiceDto: any) {  // Utilisez le DTO ici
-    const { items, totalAmount, description } = createInvoiceDto;
-    const result = await this.payDunyaService.createInvoice(items, totalAmount, description);
+  async createInvoice(@Body() invoiceData: any) {
+    const result = await this.payDunyaService.createInvoice(invoiceData);
     return result;
-  }
-
-  @Post('ipn')
-  async handleIPN(@Body() payload: any) {
-    const { data } = payload;
-    const hash = data.hash;
-    const calculatedHash = this.calculateHash(data);
-
-    if (hash === calculatedHash && data.status === 'completed') {
-      // Traitez la transaction ici
-      console.log('Transaction réussie:', data);
-    } else {
-      console.log('Transaction échouée ou données invalides');
-    }
-  }
-
-  private calculateHash(data: any) {
-    const masterKey = process.env.PAYDUNYA_MASTER_KEY;
-    const hash = crypto.createHash('sha512');
-    hash.update(masterKey);
-    return hash.digest('hex');
   }
 }
