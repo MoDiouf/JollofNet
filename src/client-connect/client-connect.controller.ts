@@ -61,9 +61,9 @@ export class ClientConnectController {
         description: "Chaussure VANS dernier modèle",
       },
       store: {
-        name: "Magasin Chez Sandra",
+        name: "JollofNet",
         tagline: "L'élégance n'a pas de prix",
-        phone_number: "336530583",
+        phone_number: "+221772843441",
         postal_address: "Dakar Plateau - Etablissement kheweul",
         website_url: "http://www.chez-sandra.sn",
         logo_url: "http://www.chez-sandra.sn/logo.png",
@@ -73,7 +73,8 @@ export class ClientConnectController {
     try {
       // Effectuer un appel POST vers le service PayDunya
       const paymentUrl = await this.createInvoice(invoiceData);
-
+      console.log(paymentUrl);
+      
       // Réponse avec l'URL de paiement
       return res.redirect(paymentUrl);
     } catch (error) {
