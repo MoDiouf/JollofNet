@@ -210,127 +210,10 @@ while (i <= 5) {
               await page.click('#Btn_apply_MACFilterACLPolicy');
               console.log("Apply");
               
-              await page.evaluate(() => {
-                const div = document.querySelector('#MACFilterRule_container');
-                if (div && div instanceof HTMLElement && div.style.display === 'none') {
-                  div.style.display = 'block'; // Modifier display: none à display: block
-                }
-              });
-            
-              // Vérifier que la div est bien maintenant en display: block
-              const isVisible = await page.$eval('#MACFilterRule_container', el => {
-                const style = window.getComputedStyle(el);
-                return style.display === 'block'; // Retourne vrai si la div est en block
-              });
-            
-              console.log(isVisible ? 'La div est maintenant visible' : 'La div est toujours cachée');
+              await new Promise(resolve => setTimeout(resolve, 3000));
               
-              /*let index = 0;
-              let count = 0;
-              while (true) {
-                // Utiliser un sélecteur dynamique avec l'index
-                const selector = `#instName_MACFilterRule\\:${index}`;
-                
-                try {
-                  // Attendre que l'élément avec l'ID spécifié soit visible
-                  await page.waitForSelector(selector, { timeout: 2000 });
-                  this.delay(20000)
-                  // Extraire le texte du span et son attribut title
-                  const spanText = await page.$eval(selector, el => el.textContent);
-                  const spanTitle = await page.$eval(selector, el => el.getAttribute('title'));
-            
-                  console.log(`Element trouvé à l'index ${index}: Texte - ${spanText}, Title - ${spanTitle}`);
-            
-                  // Incrémenter le compteur et passer à l'index suivant
-                  count++;
-                  index++;
-                } catch (error) {
-                  // Sortir de la boucle si l'élément n'existe plus
-                  console.log(`Aucun élément trouvé à l'index ${index}. Fin de la recherche.`);
-                  break;
-                }
-              }*/
-            
-              // Afficher le nombre total d'éléments trouvés
-             // console.log(`Nombre total de spans trouvés avec l'ID sous la forme #instName_MACFilterRule:${index} : ${count}`);
-
-              // console.log(`Nombre total de div avec l'ID sous la forme #instName_MACFilterRule:${index} : ${count}`);
-
-              
-             // await page.waitForSelector("#addInstBar_MACFilterRule",{timeout:10000});
-             // await page.click("#addInstBar_MACFilterRule");
-             await page.evaluate(() => {
-              // Sélectionner les deux div par leurs IDs
-              const templateDiv = document.querySelector('#template_MACFilterRule') as HTMLElement;
-              const changeAreaDiv = document.querySelector('#changeArea_MACFilterRule') as HTMLElement;
-            
-              // Vérifier si les div existent et modifier leur style
-              if (templateDiv) {
-                templateDiv.style.display = 'block';
-              }
-              if (changeAreaDiv) {
-                changeAreaDiv.style.display = 'block';
-              }
-            });
-            
-              const inputSelector = `#Name`;
-              // Attendre que l'input soit visible
-              await page.waitForSelector(inputSelector,{timeout:20000});
-
-              // Cliquer pour sélectionner le champ
-              await page.click(inputSelector);
-              await page.$eval(inputSelector, (input: HTMLInputElement, text: string) => {
-                input.value = ''; // Efface l'ancien contenu
-                input.value = text; // Définit le nouveau texte
-              }, 'FirstApp');
-              
-
-              const selectSelector = `#Interface`;
-              await page.waitForSelector(selectSelector);
-              const optionIndex = i + 1; // `nth-child` commence à 1 en CSS, donc on utilise `i + 1`
-              const optionValue = await page.$eval(
-                `${selectSelector} option:nth-child(${optionIndex})`,
-                (option: HTMLOptionElement) => option.value
-              );
-              await page.select(selectSelector, optionValue);
-              
-              
-              for (let index = 0; index < 6; index++) {
-                // Construire le sélecteur dynamique pour chaque input
-                const inputSelector = `#sub_MACAddress${index}`;
-
-                try {
-                  // Vérifier si l'adresse MAC correspondante existe dans InfoNewWifi
-                  const macAddressKey = `macAddress${index + 1}` as keyof typeof InfoNewWifi;
-                  const macAddress = InfoNewWifi[macAddressKey];
-
-                  if (!macAddress) {
-                    console.warn(`InfoNewWifi.${macAddressKey} est introuvable ou vide, saut de l'input ${inputSelector}.`);
-                    continue;
-                  }
-
-                  // Attendre que l'input soit visible
-                  await page.waitForSelector(inputSelector, { visible: true });
-
-                  // Remplir l'input avec la valeur correspondante
-                  await page.$eval(inputSelector, (input: HTMLInputElement, value: string) => {
-                    input.value = ''; // Efface l'ancien contenu
-                    input.value = value; // Définit la nouvelle valeur
-                  }, macAddress);
-
-                  console.log(`Input ${inputSelector} rempli avec ${macAddress}`);
-                } catch (error) {
-                  console.error(`Erreur lors du remplissage de l'input ${inputSelector}:`, error);
-                }
-              }
-            
-              const applyButtonSelector = `#Btn_apply_MACFilterRule`;
-              await page.waitForSelector(applyButtonSelector, { visible: true });
-              await page.click(applyButtonSelector);
-
-              await page.reload({ waitUntil: 'networkidle0' }); // Attend que le réseau soit inactif après le rechargement
-
               await page.waitForSelector('#wlanConfig'); // Attendre que l'élément soit chargé
+              /**/
               await page.click('#wlanConfig'); // Cliquer sur l'élément
               console.log('Accès aux paramètres basic du WLAN pour activer le reseau.');
               
@@ -359,6 +242,7 @@ while (i <= 5) {
               const selector = '.succHint';
               await page.waitForSelector(selector);
               console.log("Les modifications ont été appliquées pour le réseau.");/**/
+              await new Promise(resolve => setTimeout(resolve, 3000))
               break;
 
             } else {
@@ -639,7 +523,7 @@ while (i <= 5) {
           }
   
           // Créer l'URL unique pour ce réseau (avec redirection vers client-connect)
-          const uniqueUrl = `http://192.168.1.5:3000/client-connect/${reseau.link}`;
+          const uniqueUrl = `http://192.168.1.28:3000/client-connect/${reseau.link}`;
   
           // Créer le contenu du QR code
           const qrData = uniqueUrl;

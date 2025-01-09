@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
@@ -13,6 +13,33 @@ export class ClientConnectController {
     @InjectRepository(ReseauInfo)
     private ReseauInfoRepository: Repository<ReseauInfo>
   ) {}
+
+  @Get(':uuid')
+  async redirectToNetwork(@Param('uuid') uuid: string, @Query() query: any,@Res() res:Response) {
+    // Recherche du réseau correspondant à l'UUID
+    console.log("link",uuid);
+    
+    const reseau = await this.ReseauInfoRepository.findOne({
+      where: { link: uuid },
+    });
+
+    if (!reseau) {
+      throw new Error('Réseau non trouvé');
+    }
+
+    // Extraire les informations du réseau
+    const {  modem_id, essid } = reseau;
+    console.log("id_User",modem_id);
+    console.log("Nom reseau",essid);
+    
+    // Passer ces informations à la vue EJS
+    return res.render("clientPage/client",{
+      
+      modem_id,
+      essid,
+      
+    });
+  }
 
   @Post()
   async handleClientForm(@Body() body: any, @Res() res: Response) {
