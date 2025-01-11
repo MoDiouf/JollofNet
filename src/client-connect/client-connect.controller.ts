@@ -1,14 +1,16 @@
-import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Body, Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReseauInfo } from 'src/add-network/entities/reseaux.entity';
+import { ClientConnectService } from './client-connect.service';
 
 @Controller('client-connect')
 export class ClientConnectController {
   constructor(
+    private readonly ClientService: ClientConnectService,
     private readonly httpService: HttpService,
     @InjectRepository(ReseauInfo)
     private ReseauInfoRepository: Repository<ReseauInfo>
@@ -42,9 +44,13 @@ export class ClientConnectController {
   }
 
   @Post()
-  async handleClientForm(@Body() body: any, @Res() res: Response) {
+  async handleClientForm(@Body() body: any, @Res() res: Response,@Req() req: Request) {
     const { modem_id, essid, mac1, mac2, mac3, mac4, mac5, mac6, nom } = body;
-
+    const userModem = req.session.user.modemUsername
+    const passModem = req.session.user.modemPassword
+    const reseau = await this.ReseauInfoRepository.findOne({
+      where: { essid: essid,modem_id:modem_id },
+    });
     // Concaténer les parties de l'adresse MAC
     const macAddress = [mac1, mac2, mac3, mac4, mac5, mac6].join(':');
 
@@ -54,15 +60,15 @@ export class ClientConnectController {
     console.log("ESSID:", essid);
     console.log("Adresse MAC:", macAddress);
 
-    // Données de la facture à envoyer
-    const invoiceData = {
+    if (reseau.payant) {
+      const invoiceData = {
       invoice: {
-        total_amount: 1000,
-        description: "Chaussure VANS dernier modèle",
+        total_amount: reseau.prix_unitaire,
+        description: "Wifi pour tous",
       },
       store: {
         name: "JollofNet",
-        tagline: "L'élégance n'a pas de prix",
+        tagline: "Votre wifi c'est votre",
         phone_number: "+221772843441",
         postal_address: "Dakar Plateau - Etablissement kheweul",
         website_url: "http://www.chez-sandra.sn",
@@ -81,8 +87,31 @@ export class ClientConnectController {
       console.error('Erreur lors de la création de la facture:', error);
       return res.status(500).send('Erreur lors de la création de la facture');
     }
+    }else{
+      const addClient = await this.ClientService.addClient(userModem,passModem,macAddress);
+    }
+    // Données de la facture à envoyer
+    
   }
 
+  @Post('ipn')
+  async handleIPN(@Body() body: any, @Res() res: Response) {
+    console.log('IPN reçu:', body);
+
+    // Vérifiez la signature ou les données reçues si nécessaire
+    const { status, transaction_id, amount } = body;
+
+    if (status === 'completed') {
+      console.log(`Paiement réussi pour la transaction ${transaction_id}. Montant : ${amount}`);
+      
+      // TODO: Effectuez les actions nécessaires (mise à jour de la base de données, etc.)
+    } else {
+      console.log(`Paiement échoué ou en attente pour la transaction ${transaction_id}`);
+    }
+
+    // Répondez avec un code 200 pour confirmer que l'IPN a été traité
+    return res.status(200).send('IPN reçu');
+  }
   // Méthode pour envoyer la requête POST à PayDunya
   private async createInvoice(invoiceData: any): Promise<string> {
     try {
