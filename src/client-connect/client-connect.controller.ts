@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReseauInfo } from 'src/add-network/entities/reseaux.entity';
 import { ClientConnectService } from './client-connect.service';
+import { ModemInfo } from 'src/add-network/entities/modemInfo.entity';
 
 @Controller('client-connect')
 export class ClientConnectController {
@@ -13,7 +14,8 @@ export class ClientConnectController {
     private readonly ClientService: ClientConnectService,
     private readonly httpService: HttpService,
     @InjectRepository(ReseauInfo)
-    private ReseauInfoRepository: Repository<ReseauInfo>
+    private ReseauInfoRepository: Repository<ReseauInfo>,
+    
   ) {}
 
   @Get(':uuid')
@@ -44,24 +46,31 @@ export class ClientConnectController {
   }
 
   @Post()
-  async handleClientForm(@Body() body: any, @Res() res: Response,@Req() req: Request) {
-    const { modem_id, essid, mac1, mac2, mac3, mac4, mac5, mac6, nom } = body;
-    const userModem = req.session.user.modemUsername
-    const passModem = req.session.user.modemPassword
-    const reseau = await this.ReseauInfoRepository.findOne({
-      where: { essid: essid,modem_id:modem_id },
-    });
-    // Concaténer les parties de l'adresse MAC
-    const macAddress = [mac1, mac2, mac3, mac4, mac5, mac6].join(':');
+async handleClientForm(@Body() body: any, @Res() res: Response, @Req() req: Request) {
+  const { modem_id, essid, mac1, mac2, mac3, mac4, mac5, mac6, nom } = body;
+  const userModem = req.session.user.modemUsername;
+  const passModem = req.session.user.modemPassword;
 
-    // Affiche les informations pour la vérification
-    console.log("Nom:", nom);
-    console.log("Modem ID:", modem_id);
-    console.log("ESSID:", essid);
-    console.log("Adresse MAC:", macAddress);
+  // Recherche du réseau dans la base de données
+  const reseau = await this.ReseauInfoRepository.findOne({
+    where: { essid: essid, modem_id: modem_id },
+  });
 
-    if (reseau.payant) {
-      const invoiceData = {
+  if (!reseau) {
+    return res.status(404).send('Réseau introuvable');
+  }
+
+  // Concaténer les parties de l'adresse MAC
+  const macAddress = [mac1, mac2, mac3, mac4, mac5, mac6].join(':');
+
+  console.log("Nom:", nom);
+  console.log("Modem ID:", modem_id);
+  console.log("ESSID:", essid);
+  console.log("Adresse MAC:", macAddress);
+
+  // Si le réseau est payant, initier le processus de paiement
+  if (reseau.payant) {
+    const invoiceData = {
       invoice: {
         total_amount: reseau.prix_unitaire,
         description: "Wifi pour tous",
@@ -77,41 +86,59 @@ export class ClientConnectController {
     };
 
     try {
-      // Effectuer un appel POST vers le service PayDunya
+      // Création de la facture et récupération de l'URL de paiement
       const paymentUrl = await this.createInvoice(invoiceData);
-      console.log(paymentUrl);
-      
-      // Réponse avec l'URL de paiement
+
+      // Stocker temporairement les données client pour traitement après paiement
+      req.session.pendingClientData = {
+        userModem,
+        passModem,
+        macAddress,
+        nom,
+      };
+
+      console.log('Redirection vers URL de paiement:', paymentUrl);
       return res.redirect(paymentUrl);
     } catch (error) {
       console.error('Erreur lors de la création de la facture:', error);
       return res.status(500).send('Erreur lors de la création de la facture');
     }
-    }else{
-      const addClient = await this.ClientService.addClient(userModem,passModem,macAddress);
-    }
-    // Données de la facture à envoyer
-    
   }
 
-  @Post('ipn')
-  async handleIPN(@Body() body: any, @Res() res: Response) {
-    console.log('IPN reçu:', body);
+  // Si le réseau n'est pas payant, ajouter directement le client
+  await this.ClientService.addClient(userModem, passModem, macAddress,nom);
+  this.ClientService.addListClient(nom,macAddress)
+  console.log('Client ajouté sans paiement.');
+  return res.status(200).send('Client ajouté avec succès');
+}
 
-    // Vérifiez la signature ou les données reçues si nécessaire
-    const { status, transaction_id, amount } = body;
 
-    if (status === 'completed') {
-      console.log(`Paiement réussi pour la transaction ${transaction_id}. Montant : ${amount}`);
+@Post('ipn')
+async handleIPN(@Body() body: any, @Res() res: Response, @Req() req: Request) {
+  console.log('IPN reçu:', body);
+
+  const { status, transaction_id, amount } = body;
+
+  if (status === 'completed') {
+    console.log(`Paiement réussi pour la transaction ${transaction_id}. Montant : ${amount}`);
+
+      this.ClientService.updateGain(req.session.user.id,amount)
+    // Vérifiez et récupérez les données client stockées
+    const { userModem, passModem, macAddress,nom } = req.session.pendingClientData || {};
+    if (userModem && passModem && macAddress && nom) {
+      await this.ClientService.addClient(userModem, passModem, macAddress,nom);
+      console.log('Client ajouté après paiement.');
+      this.ClientService.addListClient(nom,macAddress)
+      req.session.pendingClientData = null; 
       
-      // TODO: Effectuez les actions nécessaires (mise à jour de la base de données, etc.)
-    } else {
-      console.log(`Paiement échoué ou en attente pour la transaction ${transaction_id}`);
     }
-
-    // Répondez avec un code 200 pour confirmer que l'IPN a été traité
-    return res.status(200).send('IPN reçu');
+  } else {
+    console.log(`Paiement échoué ou en attente pour la transaction ${transaction_id}`);
   }
+
+  return res.status(200).send('IPN reçu');
+}
+
   // Méthode pour envoyer la requête POST à PayDunya
   private async createInvoice(invoiceData: any): Promise<string> {
     try {
