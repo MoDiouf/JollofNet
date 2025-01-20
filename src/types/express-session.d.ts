@@ -9,6 +9,8 @@ declare module 'express-session' {
       passModem: string;
       macAddress: string;
       nom:string;
+      essid:string;
     };
   }
+  
 }

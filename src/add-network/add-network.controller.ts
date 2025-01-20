@@ -127,7 +127,7 @@ export class AddNetworkController {
     const existingNetworks = await this.addNetworkService.checkNetworksExist(modem.id);
     if (!existingNetworks) {
       console.log('Nouveaux enregistrements....');
-      this.saveNetworksInBackground(modem.id, data);
+      this.saveNetworksInBackground(IdUser, data);
     } else {
       console.log('Réseaux déjà sauvegardés, aucune action nécessaire.');
     }

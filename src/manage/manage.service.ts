@@ -504,7 +504,8 @@ while (i <= 5) {
   }
   async generateQrCodes(id: number) {
     const reseaux = await this.ReseauInfoRepository.find({ where: { modem_id: id } });
-  
+    
+    
     if (reseaux.length === 0) {
       console.log('Aucun réseau trouvé pour ce modem_id');
       return [];
@@ -513,9 +514,12 @@ while (i <= 5) {
     const generatedQrCodes = [];
   
     for (const reseau of reseaux) {
+      console.log("Reseau",reseau.essid);
       try {
         // Si le réseau doit être scannable, générer un UUID si inexistant
         if (reseau.scan) {
+          console.log("Nom reseau :",reseau.essid);
+          
           // Générer un UUID unique si inexistant
           if (!reseau.link) {
             reseau.link = uuidv4();
@@ -523,7 +527,7 @@ while (i <= 5) {
           }
   
           // Créer l'URL unique pour ce réseau (avec redirection vers client-connect)
-          const uniqueUrl = `http://192.168.1.28:3000/client-connect/${reseau.link}`;
+          const uniqueUrl = `http://192.168.1.12:3000/client-connect/${reseau.link}`;
   
           // Créer le contenu du QR code
           const qrData = uniqueUrl;

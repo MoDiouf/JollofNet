@@ -19,14 +19,25 @@ export class ClientConnectController {
   ) {}
 
   @Get(':uuid')
-  async redirectToNetwork(@Param('uuid') uuid: string, @Query() query: any,@Res() res:Response) {
+  async redirectToNetwork(@Param('uuid') uuid: string, @Query() query: any,@Res() res:Response,@Req()req :Request) {
     // Recherche du réseau correspondant à l'UUID
     console.log("link",uuid);
+    console.log(req.session.user);
     
     const reseau = await this.ReseauInfoRepository.findOne({
       where: { link: uuid },
     });
+    const data  = await this.ClientService.RouteurInfo(reseau.modem_id)
 
+    req.session.pendingClientData = req.session.pendingClientData || {
+      userModem: '',
+      passModem: '',
+      macAddress: '',
+      nom: '',
+      essid: '',
+    };
+  req.session.pendingClientData.userModem = data.modem_username;
+  req.session.pendingClientData.passModem = data.modem_mot_de_passe;
     if (!reseau) {
       throw new Error('Réseau non trouvé');
     }
@@ -38,18 +49,16 @@ export class ClientConnectController {
     
     // Passer ces informations à la vue EJS
     return res.render("clientPage/client",{
-      
       modem_id,
-      essid,
-      
+      essid, 
     });
   }
 
   @Post()
 async handleClientForm(@Body() body: any, @Res() res: Response, @Req() req: Request) {
   const { modem_id, essid, mac1, mac2, mac3, mac4, mac5, mac6, nom } = body;
-  const userModem = req.session.user.modemUsername;
-  const passModem = req.session.user.modemPassword;
+  
+  
 
   // Recherche du réseau dans la base de données
   const reseau = await this.ReseauInfoRepository.findOne({
@@ -90,12 +99,11 @@ async handleClientForm(@Body() body: any, @Res() res: Response, @Req() req: Requ
       const paymentUrl = await this.createInvoice(invoiceData);
 
       // Stocker temporairement les données client pour traitement après paiement
-      req.session.pendingClientData = {
-        userModem,
-        passModem,
-        macAddress,
-        nom,
-      };
+      req.session.pendingClientData.macAddress = macAddress
+      req.session.pendingClientData.nom = nom
+      req.session.pendingClientData.essid = essid
+      
+console.log("BackUp",req.session.pendingClientData);
 
       console.log('Redirection vers URL de paiement:', paymentUrl);
       return res.redirect(paymentUrl);
@@ -106,7 +114,7 @@ async handleClientForm(@Body() body: any, @Res() res: Response, @Req() req: Requ
   }
 
   // Si le réseau n'est pas payant, ajouter directement le client
-  await this.ClientService.addClient(userModem, passModem, macAddress,nom);
+  await this.ClientService.addClient(req.session.pendingClientData.userModem, req.session.pendingClientData.passModem, macAddress,nom,essid);
   this.ClientService.addListClient(nom,macAddress)
   console.log('Client ajouté sans paiement.');
   return res.status(200).send('Client ajouté avec succès');
@@ -124,9 +132,9 @@ async handleIPN(@Body() body: any, @Res() res: Response, @Req() req: Request) {
 
       this.ClientService.updateGain(req.session.user.id,amount)
     // Vérifiez et récupérez les données client stockées
-    const { userModem, passModem, macAddress,nom } = req.session.pendingClientData || {};
+    const { userModem, passModem, macAddress,nom,essid } = req.session.pendingClientData || {};
     if (userModem && passModem && macAddress && nom) {
-      await this.ClientService.addClient(userModem, passModem, macAddress,nom);
+      await this.ClientService.addClient(userModem, passModem, macAddress,nom,essid);
       console.log('Client ajouté après paiement.');
       this.ClientService.addListClient(nom,macAddress)
       req.session.pendingClientData = null; 

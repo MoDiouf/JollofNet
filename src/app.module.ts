@@ -33,6 +33,7 @@ import { PayDunyaController } from './paydunya/paydunya.controller';
 import { PayDunyaService } from './paydunya/paydunya.service';
 import { PaydunyaModule } from './paydunya/paydunya.module';
 import { HttpModule } from '@nestjs/axios';
+import { ListClient } from './client-connect/DTO/listClient.entity';
 
 
 
@@ -51,7 +52,7 @@ import { HttpModule } from '@nestjs/axios';
       username: 'root',
       password: 'Sword@rtonline',
       database: 'JollofNet',
-      entities: [User,ModemInfo,UserConnected,ReseauInfo],
+      entities: [User,ModemInfo,UserConnected,ReseauInfo,ListClient],
       synchronize: false,
     }),
     SignLogModule,
