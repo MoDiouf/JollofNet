@@ -24,12 +24,12 @@ export class ClientConnectService {
     macAddress: string,
     nom: string,
     essidName: string,
-  ): Promise<boolean | void> {
+  ): Promise<boolean > {
 
     console.log("AddClienttttttt");
     
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -58,7 +58,7 @@ export class ClientConnectService {
       await page.click('a#localnet');
   
       await page.waitForSelector('a#lanConfig');
-      await page.click('a#lanConfig');
+      await page.click('a#wlanConfig');
   
       await page.waitForSelector('h1#WLANSSIDConfBar');
       await page.click('h1#WLANSSIDConfBar');
@@ -68,7 +68,7 @@ export class ClientConnectService {
       let searchIndex = undefined
       let found = false;
       while (true) {
-        const selector = `a#instName_WLANSSIDConf:${index}`;
+        const selector = `a#instName_WLANSSIDConf\\:${index}`;
         const exists = await page.$(selector); // Vérifie si l'élément existe
   
         if (!exists) break; // Si l'élément n'existe plus, arrêter la boucle
@@ -102,58 +102,69 @@ export class ClientConnectService {
       await page.click('p#wlanAdvanced'); // Cliquer sur l'élément
     console.log('Navigué vers "WLAN Advanced".');
 
-    await page.evaluate(() => {
-        const div = document.querySelector('#MACFilterRule_container');
-        if (div && div instanceof HTMLElement && div.style.display === 'none') {
-          div.style.display = 'block'; // Modifier display: none à display: block
-        }
-      });
     
-      // Vérifier que la div est bien maintenant en display: block
-      const isVisible = await page.$eval('#MACFilterRule_container', el => {
-        const style = window.getComputedStyle(el);
-        return style.display === 'block'; // Retourne vrai si la div est en block
-      });
-    
-      console.log(isVisible ? 'La div est maintenant visible' : 'La div est toujours cachée');
-      await page.evaluate(() => {
-        // Sélectionner les deux div par leurs IDs
-        const templateDiv = document.querySelector('#template_MACFilterRule') as HTMLElement;
-        const changeAreaDiv = document.querySelector('#changeArea_MACFilterRule') as HTMLElement;
+    await page.waitForSelector('h1#MACFilterRuleBar'); // Attendre que l'élément soit présent
+      await page.click('h1#MACFilterRuleBar');
+
+
+      let compteur = 0; // Initialisation du compteur
+      let indexx = 0; // Initialisation de l'index
       
-        // Vérifier si les div existent et modifier leur style
-        if (templateDiv) {
-          templateDiv.style.display = 'block';
+      // Boucle pour compter les éléments avec des IDs spécifiques
+      while (true) {
+        const selector = `#instName_MACFilterRule\\:${indexx}`; // Échappement du caractère `:`
+        const element = await page.$(selector); // Vérifie si l'élément existe
+      
+        if (element) {
+          compteur++; // Incrémente le compteur si l'élément existe
+          indexx++; // Passe à l'élément suivant
+        } else {
+          break; // Arrête la boucle dès qu'un ID manquant est rencontré
         }
-        if (changeAreaDiv) {
-          changeAreaDiv.style.display = 'block';
-        }
-      });
-
-      const inputSelector = `#Name`;
+      }
+      
+      console.log("Nombre d'éléments disponibles :", indexx);
+      
+      // Attendre l'élément pour ajouter une nouvelle entrée
+      await page.waitForSelector('span#addInstBar_MACFilterRule'); 
+      await page.click('span#addInstBar_MACFilterRule');
+      
+      // Sélecteur pour l'input basé sur l'index actuel
+      const inputSelector = `#Name\\:${indexx}`;
+      
       // Attendre que l'input soit visible
-      await page.waitForSelector(inputSelector,{timeout:20000});
-
-      // Cliquer pour sélectionner le champ
-      await page.click(inputSelector);
-      await page.$eval(inputSelector, (input: HTMLInputElement, text: string) => {
-        input.value = ''; // Efface l'ancien contenu
-        input.value = text; // Définit le nouveau texte
+      await page.waitForSelector(inputSelector, { timeout: 20000 });
+      
+      // Modifier la valeur du champ d'entrée
+      await page.$eval(inputSelector, (input, text) => {
+        const inputElement = input as HTMLInputElement; // Conversion explicite en HTMLInputElement
+        inputElement.value = ''; // Effacer le contenu existant
+        inputElement.value = text; // Définir le nouveau texte
       }, nom);
-
-      const selectSelector = `#Interface`;
-              await page.waitForSelector(selectSelector);
-              const optionIndex = index; // `nth-child` commence à 1 en CSS, donc on utilise `i + 1`
-              const optionValue = await page.$eval(
-                `${selectSelector} option:nth-child(${optionIndex})`,
-                (option: HTMLOptionElement) => option.value
-              );
-              await page.select(selectSelector, optionValue);
-
+      // Sélecteur pour le menu déroulant
+      const selectSelector = `#Interface\\:${indexx}`;
+      
+      // Attendre que le menu déroulant soit disponible
+      await page.waitForSelector(selectSelector);
+      
+      // Sélectionner une option basée sur son index
+      const optionIndex = index; // Index de l'option à sélectionner (par exemple, la première option)
+      const optionValue = await page.$eval(
+        `${selectSelector} option:nth-child(${optionIndex})`,
+        (option) => option.value
+      );
+      
+      // Sélectionner l'option dans le menu déroulant
+      await page.select(selectSelector, optionValue);
+      
+      console.log("Nouvelle entrée ajoutée et sélection configurée.");
+      
     } catch (error) {
       console.error('Erreur lors de la mise à jour', error);
+      return false
     } finally {
-      await browser.close(); // Fermer le navigateur
+      //await browser.close(); // Fermer le navigateur
+      return true
     }
   }
   

@@ -210,7 +210,7 @@ while (i <= 5) {
               await page.click('#Btn_apply_MACFilterACLPolicy');
               console.log("Apply");
               
-              await new Promise(resolve => setTimeout(resolve, 3000));
+              await new Promise(resolve => setTimeout(resolve, 5000));
               
               await page.waitForSelector('#wlanConfig'); // Attendre que l'élément soit chargé
               /**/
@@ -242,7 +242,7 @@ while (i <= 5) {
               const selector = '.succHint';
               await page.waitForSelector(selector);
               console.log("Les modifications ont été appliquées pour le réseau.");/**/
-              await new Promise(resolve => setTimeout(resolve, 3000))
+              await new Promise(resolve => setTimeout(resolve, 5000))
               break;
 
             } else {

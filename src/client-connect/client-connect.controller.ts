@@ -22,14 +22,15 @@ export class ClientConnectController {
   async redirectToNetwork(@Param('uuid') uuid: string, @Query() query: any,@Res() res:Response,@Req()req :Request) {
     // Recherche du réseau correspondant à l'UUID
     console.log("link",uuid);
-    console.log(req.session.user);
+
     
     const reseau = await this.ReseauInfoRepository.findOne({
       where: { link: uuid },
     });
     const data  = await this.ClientService.RouteurInfo(reseau.modem_id)
+    console.log("After data",data);
 
-    req.session.pendingClientData = req.session.pendingClientData || {
+   /**/ req.session.pendingClientData =  {
       userModem: '',
       passModem: '',
       macAddress: '',
@@ -114,10 +115,34 @@ console.log("BackUp",req.session.pendingClientData);
   }
 
   // Si le réseau n'est pas payant, ajouter directement le client
-  await this.ClientService.addClient(req.session.pendingClientData.userModem, req.session.pendingClientData.passModem, macAddress,nom,essid);
-  this.ClientService.addListClient(nom,macAddress)
-  console.log('Client ajouté sans paiement.');
-  return res.status(200).send('Client ajouté avec succès');
+  const maxRetries = 3; // Définir le nombre de tentatives
+  let attempts = 0;
+  let isSuccess = false;
+
+  // Essayer d'ajouter le client avec réessais
+  while (attempts < maxRetries) {
+    isSuccess = await this.ClientService.addClient(req.session.pendingClientData.userModem, req.session.pendingClientData.passModem, macAddress, nom, essid);
+    
+    if (isSuccess) {
+      // Si le client a été ajouté avec succès, sortir de la boucle
+      break;
+    }
+    
+    attempts++; // Incrémenter le compteur de tentatives
+    console.log(`Tentative ${attempts} échouée. Nouvelle tentative...`);
+  }
+
+  if (isSuccess) {
+    // Si l'ajout a réussi, ajouter le client à la liste
+    this.ClientService.addListClient(nom, macAddress);
+    console.log('Client ajouté sans paiement.');
+    return res.status(200).send('Client ajouté avec succès');
+  } else {
+    // Si toutes les tentatives échouent
+    console.error('Erreur lors de l\'ajout du client après plusieurs tentatives');
+    return res.status(500).send('Erreur lors de l\'ajout du client');
+  }
+  
 }
 
 
@@ -130,15 +155,38 @@ async handleIPN(@Body() body: any, @Res() res: Response, @Req() req: Request) {
   if (status === 'completed') {
     console.log(`Paiement réussi pour la transaction ${transaction_id}. Montant : ${amount}`);
 
-      this.ClientService.updateGain(req.session.user.id,amount)
+    // Mise à jour des gains
+    await this.ClientService.updateGain(req.session.user.id, amount);
+
     // Vérifiez et récupérez les données client stockées
-    const { userModem, passModem, macAddress,nom,essid } = req.session.pendingClientData || {};
+    const { userModem, passModem, macAddress, nom, essid } = req.session.pendingClientData || {};
     if (userModem && passModem && macAddress && nom) {
-      await this.ClientService.addClient(userModem, passModem, macAddress,nom,essid);
-      console.log('Client ajouté après paiement.');
-      this.ClientService.addListClient(nom,macAddress)
-      req.session.pendingClientData = null; 
-      
+      const maxRetries = 3; // Définir le nombre de tentatives
+      let attempts = 0;
+      let isSuccess = false;
+
+      // Essayer d'ajouter le client avec réessais
+      while (attempts < maxRetries) {
+        isSuccess = await this.ClientService.addClient(userModem, passModem, macAddress, nom, essid);
+
+        if (isSuccess) {
+          // Si le client a été ajouté avec succès, sortir de la boucle
+          break;
+        }
+
+        attempts++; // Incrémenter le compteur de tentatives
+        console.log(`Tentative ${attempts} échouée. Nouvelle tentative...`);
+      }
+
+      if (isSuccess) {
+        // Si l'ajout a réussi, ajouter le client à la liste
+        this.ClientService.addListClient(nom, macAddress);
+        console.log('Client ajouté après paiement.');
+        req.session.pendingClientData = null; // Réinitialiser les données du client
+      } else {
+        // Si toutes les tentatives échouent
+        console.error('Erreur lors de l\'ajout du client après plusieurs tentatives');
+      }
     }
   } else {
     console.log(`Paiement échoué ou en attente pour la transaction ${transaction_id}`);
@@ -146,6 +194,7 @@ async handleIPN(@Body() body: any, @Res() res: Response, @Req() req: Request) {
 
   return res.status(200).send('IPN reçu');
 }
+
 
   // Méthode pour envoyer la requête POST à PayDunya
   private async createInvoice(invoiceData: any): Promise<string> {
