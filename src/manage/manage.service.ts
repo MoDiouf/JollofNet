@@ -527,7 +527,7 @@ while (i <= 5) {
           }
   
           // Créer l'URL unique pour ce réseau (avec redirection vers client-connect)
-          const uniqueUrl = `http://192.168.1.12:3000/client-connect/${reseau.link}`;
+          const uniqueUrl = `http://192.168.1.5:3000/client-connect/${reseau.link}`;
   
           // Créer le contenu du QR code
           const qrData = uniqueUrl;

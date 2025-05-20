@@ -13,7 +13,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
-  
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

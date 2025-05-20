@@ -30,12 +30,14 @@ export class ClientConnectController {
     const data  = await this.ClientService.RouteurInfo(reseau.modem_id)
     console.log("After data",data);
 
+    
    /**/ req.session.pendingClientData =  {
+      userId: req.session.user.id,
       userModem: '',
       passModem: '',
       macAddress: '',
       nom: '',
-      essid: '',
+      essid: '',      
     };
   req.session.pendingClientData.userModem = data.modem_username;
   req.session.pendingClientData.passModem = data.modem_mot_de_passe;
@@ -150,12 +152,16 @@ console.log("BackUp",req.session.pendingClientData);
 async handleIPN(@Body() body: any, @Res() res: Response, @Req() req: Request) {
   console.log('IPN reçu:', body);
 
-  const { status, transaction_id, amount } = body;
+  const { status, invoice, hash } = body.data || {};
+  const transaction_id = invoice?.token || hash;
+  const amount = invoice?.total_amount;
 
   if (status === 'completed') {
     console.log(`Paiement réussi pour la transaction ${transaction_id}. Montant : ${amount}`);
 
     // Mise à jour des gains
+    console.log(req.session.user.id);
+    
     await this.ClientService.updateGain(req.session.user.id, amount);
 
     // Vérifiez et récupérez les données client stockées

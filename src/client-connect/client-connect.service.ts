@@ -132,7 +132,7 @@ export class ClientConnectService {
       // Sélecteur pour l'input basé sur l'index actuel
       const inputSelector = `#Name\\:${indexx}`;
       
-      // Attendre que l'input soit visible
+      // Attendre que l'input soit visibe
       await page.waitForSelector(inputSelector, { timeout: 20000 });
       
       // Modifier la valeur du champ d'entrée

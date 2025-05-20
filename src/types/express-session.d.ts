@@ -1,4 +1,3 @@
-// src/types/express-session.d.ts
 import 'express-session';
 
 declare module 'express-session' {
@@ -10,6 +9,7 @@ declare module 'express-session' {
       macAddress: string;
       nom:string;
       essid:string;
+      userId:number
     };
   }
   

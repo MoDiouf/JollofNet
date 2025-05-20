@@ -18,7 +18,6 @@ export class AddNetworkController {
     }
   
     console.log(req.session.user);
-  
     const name = req.session.user.name;
     const capitalizedname = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(); 
     const dataGet = await this.addNetworkService.AllData(user.id);
@@ -58,7 +57,7 @@ export class AddNetworkController {
       messageType: null,
     });
   }
-  
+
 
   @Post()
   async AddModem(@Req() req:Request ,@Body() body:any,@Res() res:Response){

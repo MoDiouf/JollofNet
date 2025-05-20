@@ -74,8 +74,12 @@ export class AppModule implements NestModule {
       .apply(session({
         secret: 'jollofNetTheme',  // Remplacez par une clé secrète
         resave: false,
-        saveUninitialized: true,
-        cookie: { secure: false }  // Mettez à true si vous utilisez HTTPS
+        saveUninitialized: false,
+        cookie: {
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 1000 * 60 * 60, // 1 heure
+        }
+         // Mettez à true si vous utilisez HTTPS
       }))
       .forRoutes('*');  // Applique ce middleware à toutes les routes
   }
